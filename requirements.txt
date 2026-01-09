@@ -1,0 +1,2 @@
+tkinter>=8.6
+schedule>=1.1.0==1.2.0

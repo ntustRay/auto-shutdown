@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Windows
+*.lnk
+Thumbs.db
+Desktop.ini
+nul
+
+# Config (user-specific)
+.auto_shutdown_config.json
