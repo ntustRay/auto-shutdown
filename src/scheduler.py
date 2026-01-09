@@ -1,25 +1,20 @@
-"""Unified scheduler module for handling system shutdown scheduling"""
+"""Windows-only scheduler module for handling system shutdown scheduling"""
 import json
-import os
-import platform
 import subprocess
 from datetime import datetime
 from pathlib import Path
 import logging
 
-# Note: logging configuration is moved to the application entry point (main.py)
-# so importing this module doesn't configure global logging handlers.
 logger = logging.getLogger(__name__)
 
 # Common schtasks subcommand used in multiple places
 SCHTASKS_QUERY = "/query"
 
 class ShutdownScheduler:
-    """Unified scheduler class for managing system shutdown tasks"""
+    """Windows scheduler class for managing system shutdown tasks"""
     
     def __init__(self):
         self.config_path = Path.home() / ".auto_shutdown_config.json"
-        self.system = platform.system()
         self.task_name = "AutomaticShutdownScheduler"
         # 用於檢查的任務名稱列表（包括舊版本使用的名稱）
         self.possible_task_names = [
@@ -28,25 +23,16 @@ class ShutdownScheduler:
             "AutoShutdown"  # 舊版本使用的名稱
         ]
         
-        # Mapping for day numbers to different system formats
+        # Mapping for day numbers to Windows format
         self.day_mapping = {
-            "Windows": {
-                1: "MON", 2: "TUE", 3: "WED", 4: "THU",
-                5: "FRI", 6: "SAT", 7: "SUN"
-            },
-            "Unix": {
-                1: "1", 2: "2", 3: "3", 4: "4",
-                5: "5", 6: "6", 7: "7"
-            }
+            1: "MON", 2: "TUE", 3: "WED", 4: "THU",
+            5: "FRI", 6: "SAT", 7: "SUN"
         }
     
     def create_schedule(self, weekdays, time, is_repeat):
         """Create a system shutdown schedule"""
         try:
-            if self.system == "Windows":
-                self._create_windows_task(weekdays, time, is_repeat)
-            else:
-                self._create_unix_cron(weekdays, time, is_repeat)
+            self._create_windows_task(weekdays, time, is_repeat)
             
             self._save_config({
                 "weekdays": weekdays,
@@ -63,14 +49,11 @@ class ShutdownScheduler:
     def remove_schedule(self):
         """Remove existing shutdown schedule"""
         try:
-            if self.system == "Windows":
-                subprocess.run(
-                    ["schtasks", "/delete", "/tn", self.task_name, "/f"],
-                    capture_output=True,
-                    check=True
-                )
-            else:
-                self._remove_cron_task()
+            subprocess.run(
+                ["schtasks", "/delete", "/tn", self.task_name, "/f"],
+                capture_output=True,
+                check=True
+            )
             
             if self.config_path.exists():
                 self.config_path.unlink()
@@ -84,9 +67,7 @@ class ShutdownScheduler:
     def get_schedule_info(self):
         """Get current schedule information"""
         try:
-            if self.system == "Windows":
-                return self._get_windows_task_info()
-            return self._get_unix_task_info()
+            return self._get_windows_task_info()
         except Exception as e:
             logger.error(f"Failed to get schedule info: {str(e)}")
             return "無法獲取排程資訊"
@@ -114,7 +95,7 @@ class ShutdownScheduler:
     def _create_windows_task(self, weekdays, time, _is_repeat):
         """Create Windows scheduled task"""
         hour, minute = map(int, time.split(":"))
-        weekdays_str = " ".join(self.day_mapping["Windows"][day] for day in weekdays)
+        weekdays_str = " ".join(self.day_mapping[day] for day in weekdays)
         
         # 先刪除可能存在的舊任務
         try:
@@ -169,40 +150,6 @@ class ShutdownScheduler:
                 
         except Exception as e:
             logger.error(f"Failed to create Windows task: {str(e)}")
-            raise
-    
-    def _create_unix_cron(self, weekdays, time, is_repeat):
-        """Create Unix/Linux crontab schedule"""
-        hour, minute = map(int, time.split(":"))
-        days = ",".join(self.day_mapping["Unix"][day] for day in weekdays)
-        cron_time = f"{minute} {hour} * * {days}"
-        
-        try:
-            current_crontab = subprocess.run(
-                ["crontab", "-l"],
-                capture_output=True,
-                text=True,
-                check=True
-            ).stdout
-            
-            # Remove existing shutdown tasks
-            crontab_lines = [line for line in current_crontab.splitlines()
-                           if "shutdown -h now" not in line]
-            
-            if is_repeat:
-                crontab_lines.append(f"{cron_time} shutdown -h now")
-            
-            new_crontab = "\n".join(crontab_lines) + "\n"
-            subprocess.run(
-                ["crontab", "-"],
-                input=new_crontab,
-                text=True,
-                check=True
-            )
-            logger.info("Unix crontab updated successfully")
-            
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Failed to update crontab: {str(e)}")
             raise
     
     def _get_windows_task_info(self):
@@ -280,27 +227,6 @@ class ShutdownScheduler:
         logger.warning("No shutdown task found")
         return "找不到排程任務"
 
-    
-    def _get_unix_task_info(self):
-        """Get Unix crontab task information"""
-        try:
-            result = subprocess.run(
-                ["crontab", "-l"],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            
-            cron_lines = [line for line in result.stdout.splitlines()
-                         if "shutdown -h now" in line]
-            
-            if not cron_lines:
-                return "找不到排程任務"
-            
-            return "目前的 crontab 排程：\n" + "\n".join(cron_lines)
-            
-        except subprocess.CalledProcessError:
-            return "無法讀取 crontab"
     
     def _format_task_info(self, task_info):
         """Format task information for display"""
