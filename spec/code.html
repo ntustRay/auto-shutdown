@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Modern Shutdown Scheduler V1</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Noto+Sans+TC:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#6366f1", // Indigo-500 for a calming yet active look
+                        "primary-dark": "#4f46e5",
+                        "background-light": "#f3f4f6", // Gray-100
+                        "background-dark": "#111827", // Gray-900
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1f2937", // Gray-800
+                        "text-main-light": "#1f2937",
+                        "text-main-dark": "#f9fafb",
+                        "text-sub-light": "#6b7280",
+                        "text-sub-dark": "#9ca3af",
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+                        display: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        "xl": "1rem",
+                        "2xl": "1.5rem",
+                        "3xl": "2rem",
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'soft-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.4)',
+                    }
+                },
+            },
+        };
+    </script>
+<style>.toggle-checkbox:checked {
+            right: 0;
+            border-color: #6366f1;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #6366f1;
+        }.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark font-sans transition-colors duration-300 min-h-screen flex flex-col items-center justify-center p-4 sm:p-0">
+<div class="w-full max-w-md bg-surface-light dark:bg-surface-dark sm:rounded-3xl shadow-2xl overflow-hidden min-h-[850px] relative flex flex-col">
+<div class="h-12 w-full flex justify-between items-center px-6 pt-2">
+<span class="text-sm font-medium">9:41</span>
+<div class="flex gap-1.5 items-center">
+<span class="material-icons-round text-sm">signal_cellular_alt</span>
+<span class="material-icons-round text-sm">wifi</span>
+<span class="material-icons-round text-sm">battery_full</span>
+</div>
+</div>
+<header class="px-6 pb-4 pt-2">
+<h1 class="text-2xl font-bold text-text-main-light dark:text-text-main-dark">自動關機系統</h1>
+<p class="text-sm text-text-sub-light dark:text-text-sub-dark mt-1">智慧排程管理您的設備</p>
+</header>
+<main class="flex-1 overflow-y-auto no-scrollbar px-6 py-2 space-y-6">
+<section class="bg-background-light dark:bg-black/20 rounded-2xl p-6 flex flex-col items-center relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+<div class="flex bg-white dark:bg-surface-dark rounded-full p-1 shadow-sm mb-6 w-full max-w-[200px]">
+<button class="flex-1 py-1.5 rounded-full text-xs font-semibold bg-primary text-white shadow-sm transition-all">24小時</button>
+<button class="flex-1 py-1.5 rounded-full text-xs font-semibold text-text-sub-light dark:text-text-sub-dark hover:text-primary transition-all">12小時</button>
+</div>
+<div class="flex items-baseline gap-1 mb-2">
+<span class="text-6xl font-display font-light tracking-tight text-primary">23</span>
+<span class="text-6xl font-display font-light tracking-tight text-text-main-light dark:text-text-main-dark animate-pulse">:</span>
+<span class="text-6xl font-display font-light tracking-tight text-primary">28</span>
+</div>
+<p class="text-xs text-text-sub-light dark:text-text-sub-dark font-medium uppercase tracking-wider">設定執行時間</p>
+</section>
+<section>
+<div class="flex justify-between items-center mb-3">
+<h2 class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">重複週期</h2>
+<span class="text-xs text-primary font-medium">全選</span>
+</div>
+<div class="flex justify-between gap-2 overflow-x-auto no-scrollbar py-1">
+<button class="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium shadow-md transition-transform active:scale-95">
+                        一
+                    </button>
+<button class="flex-shrink-0 w-10 h-10 rounded-full bg-background-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-text-sub-light dark:text-text-sub-dark flex items-center justify-center text-sm font-medium transition-colors hover:border-primary hover:text-primary">
+                        二
+                    </button>
+<button class="flex-shrink-0 w-10 h-10 rounded-full bg-background-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-text-sub-light dark:text-text-sub-dark flex items-center justify-center text-sm font-medium transition-colors hover:border-primary hover:text-primary">
+                        三
+                    </button>
+<button class="flex-shrink-0 w-10 h-10 rounded-full bg-background-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-text-sub-light dark:text-text-sub-dark flex items-center justify-center text-sm font-medium transition-colors hover:border-primary hover:text-primary">
+                        四
+                    </button>
+<button class="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium shadow-md transition-transform active:scale-95">
+                        五
+                    </button>
+<button class="flex-shrink-0 w-10 h-10 rounded-full bg-background-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-text-sub-light dark:text-text-sub-dark flex items-center justify-center text-sm font-medium transition-colors hover:border-primary hover:text-primary">
+                        六
+                    </button>
+<button class="flex-shrink-0 w-10 h-10 rounded-full bg-background-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-text-sub-light dark:text-text-sub-dark flex items-center justify-center text-sm font-medium transition-colors hover:border-primary hover:text-primary">
+                        日
+                    </button>
+</div>
+</section>
+<section class="bg-background-light dark:bg-gray-800/50 rounded-2xl p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center text-primary shadow-sm">
+<span class="material-icons-round">loop</span>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-text-main-light dark:text-text-main-dark">重複執行</h3>
+<p class="text-xs text-text-sub-light dark:text-text-sub-dark">每週固定時間執行關機</p>
+</div>
+</div>
+<div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer transition-all duration-300" id="mode-toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300" for="mode-toggle"></label>
+</div>
+</section>
+<section class="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+<details class="group">
+<summary class="flex justify-between items-center font-medium cursor-pointer list-none p-4 bg-white dark:bg-surface-dark text-text-main-light dark:text-text-main-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<div class="flex items-center gap-2">
+<span class="material-icons-round text-text-sub-light dark:text-text-sub-dark">info</span>
+<span class="text-sm">使用說明與提示</span>
+</div>
+<span class="transition group-open:rotate-180">
+<span class="material-icons-round text-text-sub-light">expand_more</span>
+</span>
+</summary>
+<div class="text-text-sub-light dark:text-text-sub-dark text-sm p-4 bg-gray-50 dark:bg-gray-800/50 leading-relaxed border-t border-gray-100 dark:border-gray-700">
+<ul class="list-disc pl-4 space-y-1">
+<li>選擇要執行的星期 (可複選)</li>
+<li>系統會在關機前1分鐘顯示提醒</li>
+<li>設定會自動保存，重開機後依然有效</li>
+</ul>
+</div>
+</details>
+</section>
+<div class="flex items-center justify-center gap-2 py-2">
+<span class="w-2 h-2 rounded-full bg-red-400"></span>
+<span class="text-xs text-text-sub-light dark:text-text-sub-dark">目前狀態：未設定排程</span>
+</div>
+</main>
+<footer class="p-6 bg-surface-light dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 pb-8">
+<button class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-primary/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mb-3">
+<span class="material-icons-round">power_settings_new</span>
+                設定關機
+            </button>
+<div class="grid grid-cols-2 gap-3">
+<button class="w-full bg-background-light dark:bg-gray-800 text-text-main-light dark:text-text-main-dark font-medium py-3 px-4 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
+<span class="material-icons-round text-sm">cancel</span>
+                    取消關機
+                </button>
+<button class="w-full bg-background-light dark:bg-gray-800 text-text-main-light dark:text-text-main-dark font-medium py-3 px-4 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
+<span class="material-icons-round text-sm">fact_check</span>
+                    檢查排程
+                </button>
+</div>
+</footer>
+<div class="absolute bottom-1 left-0 right-0 flex justify-center pb-2">
+<div class="w-1/3 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+</div>
+</div>
+<div class="fixed top-4 right-4 z-50">
+<button class="bg-surface-light dark:bg-surface-dark p-3 rounded-full shadow-lg text-text-main-light dark:text-text-main-dark hover:scale-110 transition-transform" onclick="document.documentElement.classList.toggle('dark')">
+<span class="material-icons-round dark:hidden">dark_mode</span>
+<span class="material-icons-round hidden dark:block">light_mode</span>
+</button>
+</div>
+
+</body></html>
