@@ -8,6 +8,16 @@ from .modern_widgets import (
     PillToggle, CircularDayButton, ModernToggle,
     ModernButton, CollapsibleSection, StatusIndicator
 )
+from ..config import (
+    WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_RESIZABLE,
+    DEFAULT_HOUR, DEFAULT_MINUTE, DEFAULT_TIME_FORMAT, DEFAULT_REPEAT,
+    TIME_CANVAS_HEIGHT, REPEAT_CANVAS_HEIGHT, 
+    HELP_CANVAS_COLLAPSED, HELP_CANVAS_EXPANDED,
+    PADDING_MAIN, PADDING_SECTION, PADDING_WIDGET, CORNER_RADIUS,
+    COLON_BLINK_INTERVAL, WEEKDAY_NAMES, WEEKDAY_FULL_NAMES,
+    DEFAULT_SELECTED_DAYS, MESSAGES, HELP_TIPS,
+    BUTTON_HEIGHT_LARGE, BUTTON_HEIGHT_MEDIUM
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -19,8 +29,8 @@ class AutoShutdownWindow:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("自動關機系統")
-        self.root.geometry("420x750")
-        self.root.resizable(False, False)
+        self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
+        self.root.resizable(WINDOW_RESIZABLE, WINDOW_RESIZABLE)
         self.root.configure(bg=COLORS["bg_light"])
 
         # Configure styles
@@ -28,14 +38,12 @@ class AutoShutdownWindow:
 
         self.scheduler = ShutdownScheduler()
         self.weekday_vars = []
-        self.weekday_names = ["一", "二", "三", "四", "五", "六", "日"]
-        self.weekday_full_names = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
 
-        # Time variables (default to 23:28 matching spec)
-        self.hour_var = tk.StringVar(value="23")
-        self.minute_var = tk.StringVar(value="28")
-        self.time_format_var = tk.StringVar(value="24小時")
-        self.repeat_var = tk.BooleanVar(value=True)
+        # Time variables using config defaults
+        self.hour_var = tk.StringVar(value=DEFAULT_HOUR)
+        self.minute_var = tk.StringVar(value=DEFAULT_MINUTE)
+        self.time_format_var = tk.StringVar(value=DEFAULT_TIME_FORMAT)
+        self.repeat_var = tk.BooleanVar(value=DEFAULT_REPEAT)
 
         # Animation state
         self.colon_visible = True
@@ -48,7 +56,7 @@ class AutoShutdownWindow:
         """Create the modern user interface"""
         # Main container
         self.main_container = tk.Frame(self.root, bg=COLORS["surface_light"])
-        self.main_container.pack(fill="both", expand=True, padx=16, pady=16)
+        self.main_container.pack(fill="both", expand=True, padx=PADDING_MAIN, pady=PADDING_MAIN)
 
         # Header section
         self._create_header()
@@ -74,7 +82,7 @@ class AutoShutdownWindow:
     def _create_header(self):
         """Create header with title and subtitle"""
         header_frame = tk.Frame(self.main_container, bg=COLORS["surface_light"])
-        header_frame.pack(fill="x", pady=(8, 20))
+        header_frame.pack(fill="x", pady=(PADDING_WIDGET//2, PADDING_SECTION))
 
         title = tk.Label(
             header_frame,
@@ -98,14 +106,14 @@ class AutoShutdownWindow:
         """Create the time display and format toggle"""
         # Outer container for rounded effect
         outer_frame = tk.Frame(self.main_container, bg=COLORS["surface_light"])
-        outer_frame.pack(fill="x", pady=(0, 20))
+        outer_frame.pack(fill="x", pady=(0, PADDING_SECTION))
 
         # Create rounded container using canvas
         time_canvas = tk.Canvas(
             outer_frame,
             bg=COLORS["surface_light"],
             highlightthickness=0,
-            height=200
+            height=TIME_CANVAS_HEIGHT
         )
         time_canvas.pack(fill="x")
 
@@ -242,10 +250,9 @@ class AutoShutdownWindow:
         for i in range(7):
             days_frame.grid_columnconfigure(i, weight=1)
 
-        # Default: 一(index 0) and 五(index 4) selected per spec
-        default_selected = {0, 4}
-        for i, name in enumerate(self.weekday_names):
-            var = tk.BooleanVar(value=(i in default_selected))
+        # Default selected days from config
+        for i, name in enumerate(WEEKDAY_NAMES):
+            var = tk.BooleanVar(value=(i in DEFAULT_SELECTED_DAYS))
             self.weekday_vars.append(var)
 
             btn = CircularDayButton(
@@ -267,7 +274,7 @@ class AutoShutdownWindow:
             outer_frame,
             bg=COLORS["surface_light"],
             highlightthickness=0,
-            height=72
+            height=REPEAT_CANVAS_HEIGHT
         )
         repeat_canvas.pack(fill="x")
 
@@ -346,7 +353,7 @@ class AutoShutdownWindow:
             outer_frame,
             bg=COLORS["surface_light"],
             highlightthickness=0,
-            height=50
+            height=HELP_CANVAS_COLLAPSED
         )
         help_canvas.pack(fill="x")
         self.help_canvas = help_canvas  # Store reference for height updates
@@ -385,9 +392,9 @@ class AutoShutdownWindow:
             original_toggle(event)
             # Update canvas height
             if self.help_section.is_expanded:
-                self.help_canvas.config(height=130)
+                self.help_canvas.config(height=HELP_CANVAS_EXPANDED)
             else:
-                self.help_canvas.config(height=50)
+                self.help_canvas.config(height=HELP_CANVAS_COLLAPSED)
         self.help_section._toggle = new_toggle
         self.help_section.header.bind("<Button-1>", new_toggle)
         self.help_section.title_label.bind("<Button-1>", new_toggle)
@@ -395,13 +402,7 @@ class AutoShutdownWindow:
         self.help_section.icon_label.bind("<Button-1>", new_toggle)
 
         # Add help content
-        tips = [
-            "• 選擇要執行的星期 (可複選)",
-            "• 系統會在關機前1分鐘顯示提醒",
-            "• 設定會自動保存，重開機後依然有效"
-        ]
-
-        for tip in tips:
+        for tip in HELP_TIPS:
             tip_label = tk.Label(
                 self.help_section.content,
                 text=tip,
@@ -432,10 +433,10 @@ class AutoShutdownWindow:
             text="\u23FB  設定關機",
             command=self._schedule_shutdown,
             primary=True,
-            width=380,
-            height=48
+            width=WINDOW_WIDTH - 40,  # Account for padding
+            height=BUTTON_HEIGHT_LARGE
         )
-        self.set_button.pack(pady=(0, 12))
+        self.set_button.pack(pady=(0, PADDING_WIDGET))
 
         # Secondary buttons row
         secondary_frame = tk.Frame(buttons_frame, bg=COLORS["surface_light"])
@@ -447,7 +448,7 @@ class AutoShutdownWindow:
             command=self._cancel_shutdown,
             primary=False,
             width=182,
-            height=40
+            height=BUTTON_HEIGHT_MEDIUM
         )
         self.cancel_button.pack(side="left")
 
@@ -457,7 +458,7 @@ class AutoShutdownWindow:
             command=self._check_schedule,
             primary=False,
             width=182,
-            height=40
+            height=BUTTON_HEIGHT_MEDIUM
         )
         self.check_button.pack(side="right")
 
@@ -465,7 +466,7 @@ class AutoShutdownWindow:
         """Animate the colon blinking"""
         self.colon_visible = not self.colon_visible
         self.colon_label.config(fg=COLORS["text_main"] if self.colon_visible else COLORS["bg_light"])
-        self.root.after(500, self._start_colon_animation)
+        self.root.after(COLON_BLINK_INTERVAL, self._start_colon_animation)
 
     def _on_format_change(self):
         """Handle time format change"""
@@ -508,6 +509,17 @@ class AutoShutdownWindow:
 
     def _show_number_picker(self, var, max_val, picker_type):
         """Show a popup number picker"""
+        popup = self._create_picker_popup()
+        canvas, scrollbar, inner_frame = self._create_scrollable_container(popup)
+        
+        start_val, end_val = self._get_picker_range(picker_type, max_val)
+        self._create_picker_buttons(inner_frame, var, start_val, end_val, popup)
+        
+        self._setup_picker_scrolling(canvas, scrollbar, inner_frame, var, start_val, end_val)
+        self._setup_picker_events(popup)
+
+    def _create_picker_popup(self):
+        """Create the popup window for number picker"""
         popup = tk.Toplevel(self.root)
         popup.overrideredirect(True)
         popup.configure(bg=COLORS["surface_light"])
@@ -521,10 +533,13 @@ class AutoShutdownWindow:
         border_frame = tk.Frame(popup, bg=COLORS["border"])
         border_frame.pack(fill="both", expand=True, padx=1, pady=1)
 
-        inner_container = tk.Frame(border_frame, bg=COLORS["surface_light"])
+        return popup
+
+    def _create_scrollable_container(self, popup):
+        """Create scrollable container for picker buttons"""
+        inner_container = tk.Frame(popup, bg=COLORS["surface_light"])
         inner_container.pack(fill="both", expand=True)
 
-        # Create scrollable frame
         canvas = tk.Canvas(inner_container, width=80, height=200, bg=COLORS["surface_light"], highlightthickness=0)
         canvas.pack(side="left", fill="both", expand=True)
 
@@ -536,9 +551,20 @@ class AutoShutdownWindow:
         inner_frame = tk.Frame(canvas, bg=COLORS["surface_light"])
         canvas.create_window((0, 0), window=inner_frame, anchor="nw")
 
-        start_val = 0 if picker_type == "hour" and self.time_format_var.get() == "24小時" else (1 if picker_type == "hour" else 0)
-        end_val = max_val if picker_type == "minute" else (max_val if self.time_format_var.get() == "24小時" else 13)
+        return canvas, scrollbar, inner_frame
 
+    def _get_picker_range(self, picker_type, max_val):
+        """Get the start and end values for picker based on type"""
+        if picker_type == "hour":
+            if self.time_format_var.get() == "24小時":
+                return 0, max_val
+            else:
+                return 1, 13
+        else:  # minute
+            return 0, max_val
+
+    def _create_picker_buttons(self, inner_frame, var, start_val, end_val, popup):
+        """Create number selection buttons"""
         current_val = var.get()
         for i in range(start_val, end_val):
             val = f"{i:02d}"
@@ -546,7 +572,7 @@ class AutoShutdownWindow:
             btn = tk.Label(
                 inner_frame,
                 text=val,
-                font=FONTS["body"] if not is_current else ("Microsoft JhengHei UI", 10, "bold"),
+                font=FONTS["body"] if not is_current else (FONTS["body"][0], 10, "bold"),
                 fg=COLORS["primary"] if is_current else COLORS["text_main"],
                 bg=COLORS["surface_light"],
                 cursor="hand2",
@@ -558,18 +584,22 @@ class AutoShutdownWindow:
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg=COLORS["bg_light"]))
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg=COLORS["surface_light"]))
 
+    def _setup_picker_scrolling(self, canvas, scrollbar, inner_frame, var, start_val, end_val):
+        """Setup scrolling and position to current value"""
         inner_frame.update_idletasks()
         canvas.configure(scrollregion=canvas.bbox("all"))
 
         # Scroll to current value
         try:
+            current_val = var.get()
             current_idx = int(current_val) - start_val
             if current_idx > 0:
                 canvas.yview_moveto(max(0, (current_idx - 3) / max(1, end_val - start_val)))
         except (ValueError, ZeroDivisionError):
             pass
 
-        # Close popup when clicking outside or pressing Escape
+    def _setup_picker_events(self, popup):
+        """Setup popup close events"""
         def close_popup(event=None):
             try:
                 popup.destroy()
@@ -620,43 +650,70 @@ class AutoShutdownWindow:
         """Schedule system shutdown"""
         try:
             time_str = self._get_time_24h()
-
-            selected_days = [i + 1 for i, var in enumerate(self.weekday_vars) if var.get()]
+            selected_days = self._get_selected_days()
+            
             if not selected_days:
-                raise ValueError("請至少選擇一個星期")
+                self._show_validation_error(MESSAGES["validation_error"])
+                return
 
             is_repeat = self.repeat_var.get()
             self.scheduler.create_schedule(selected_days, time_str, is_repeat)
 
-            self._update_status("active", "已設定排程")
-            messagebox.showinfo("成功", "已成功設定關機排程")
+            self._update_status("active", MESSAGES["active_status"])
+            self._show_success_message(MESSAGES["success_scheduled"])
 
+        except ValueError as e:
+            logger.warning(f"Validation error: {str(e)}")
+            self._show_validation_error(str(e))
+        except PermissionError as e:
+            logger.error(f"Permission denied: {str(e)}")
+            self._show_permission_error()
         except Exception as e:
             logger.error(f"Failed to schedule shutdown: {str(e)}")
-            messagebox.showerror("錯誤", str(e))
+            self._show_general_error("設定排程失敗", str(e))
+
+    def _get_selected_days(self):
+        """Get list of selected weekdays"""
+        return [i + 1 for i, var in enumerate(self.weekday_vars) if var.get()]
+
+    def _show_validation_error(self, message):
+        """Show validation error message"""
+        messagebox.showerror(MESSAGES["input_error"], message)
+
+    def _show_permission_error(self):
+        """Show permission error message with help"""
+        messagebox.showerror(MESSAGES["error_title"], MESSAGES["permission_error"])
+
+    def _show_general_error(self, title, message):
+        """Show general error message"""
+        messagebox.showerror(title, message)
+
+    def _show_success_message(self, message):
+        """Show success message"""
+        messagebox.showinfo(MESSAGES["success_title"], message)
 
     def _cancel_shutdown(self):
         """Cancel scheduled shutdown"""
         try:
             self.scheduler.remove_schedule()
-            self._update_status("inactive", "未設定排程")
-            messagebox.showinfo("成功", "已取消關機排程")
+            self._update_status("inactive", MESSAGES["inactive_status"])
+            messagebox.showinfo(MESSAGES["success_title"], MESSAGES["success_canceled"])
         except Exception as e:
             logger.error(f"Failed to cancel shutdown: {str(e)}")
-            messagebox.showerror("錯誤", str(e))
+            messagebox.showerror(MESSAGES["error_title"], str(e))
 
     def _check_schedule(self):
         """Check current schedule status"""
         try:
             task_info = self.scheduler.get_schedule_info()
             if task_info and "找不到" not in task_info:
-                self._update_status("active", "已設定排程")
+                self._update_status("active", MESSAGES["active_status"])
             else:
-                self._update_status("inactive", "未設定排程")
-            messagebox.showinfo("排程狀態", task_info)
+                self._update_status("inactive", MESSAGES["inactive_status"])
+            messagebox.showinfo(MESSAGES["schedule_status"], task_info)
         except Exception as e:
             logger.error(f"Failed to check schedule: {str(e)}")
-            messagebox.showerror("錯誤", str(e))
+            messagebox.showerror(MESSAGES["error_title"], str(e))
 
     def _update_status(self, status, text):
         """Update status indicator"""

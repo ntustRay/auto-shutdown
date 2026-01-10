@@ -5,6 +5,11 @@ from datetime import datetime
 from pathlib import Path
 import logging
 
+from .config import (
+    CONFIG_FILE_NAME, TASK_NAME, DAY_MAPPING, SHUTDOWN_COMMAND,
+    SUBPROCESS_ENCODING, CONFIG_ENCODING
+)
+
 logger = logging.getLogger(__name__)
 
 # Common schtasks subcommand used in multiple places
@@ -14,25 +19,19 @@ class ShutdownScheduler:
     """Windows scheduler class for managing system shutdown tasks"""
     
     def __init__(self):
-        self.config_path = Path.home() / ".auto_shutdown_config.json"
-        self.task_name = "AutomaticShutdownScheduler"
-        # 用於檢查的任務名稱列表（包括舊版本使用的名稱）
+        self.config_path = Path.home() / CONFIG_FILE_NAME
+        self.task_name = TASK_NAME
+        # List of task names to check (including names used by older versions)
         self.possible_task_names = [
-            "AutomaticShutdownScheduler",
-            "AutomaticS",  # 可能的簡短版本
-            "AutoShutdown"  # 舊版本使用的名稱
+            TASK_NAME,
+            "AutomaticS",  # Possible short version
+            "AutoShutdown"  # Name used by old version
         ]
-        
-        # Mapping for day numbers to Windows format
-        self.day_mapping = {
-            1: "MON", 2: "TUE", 3: "WED", 4: "THU",
-            5: "FRI", 6: "SAT", 7: "SUN"
-        }
     
     def create_schedule(self, weekdays, time, is_repeat):
         """Create a system shutdown schedule"""
         try:
-            self._create_windows_task(weekdays, time, is_repeat)
+            self._create_windows_task(weekdays, time)
             
             self._save_config({
                 "weekdays": weekdays,
@@ -76,7 +75,7 @@ class ShutdownScheduler:
         """Load saved configuration"""
         try:
             if self.config_path.exists():
-                with open(self.config_path, 'r', encoding='utf-8') as f:
+                with open(self.config_path, 'r', encoding=CONFIG_ENCODING) as f:
                     return json.load(f)
             return None
         except Exception as e:
@@ -86,40 +85,40 @@ class ShutdownScheduler:
     def _save_config(self, config):
         """Save configuration to file"""
         try:
-            with open(self.config_path, 'w', encoding='utf-8') as f:
+            with open(self.config_path, 'w', encoding=CONFIG_ENCODING) as f:
                 json.dump(config, f, ensure_ascii=False, indent=2)
         except Exception as e:
             logger.error(f"Failed to save config: {str(e)}")
             raise
     
-    def _create_windows_task(self, weekdays, time, _is_repeat):
+    def _create_windows_task(self, weekdays, time):
         """Create Windows scheduled task"""
         hour, minute = map(int, time.split(":"))
-        weekdays_str = " ".join(self.day_mapping[day] for day in weekdays)
+        weekdays_str = " ".join(DAY_MAPPING[day] for day in weekdays)
         
-        # 先刪除可能存在的舊任務
+        # Delete any existing old task
         try:
             subprocess.run(
                 ["schtasks", "/delete", "/tn", self.task_name, "/f"],
                 capture_output=True,
                 text=True,
-                encoding='cp950'
+                encoding=SUBPROCESS_ENCODING
             )
         except Exception:
             # ignore delete errors
             pass
             
-        # 建立新任務，使用更完整的命令參數
+        # Create new task with complete command parameters
         cmd = [
             "schtasks", "/create",
             "/tn", self.task_name,
-            "/tr", "shutdown /s /t 60 /c \"系統將在1分鐘後關機\"",
+            "/tr", SHUTDOWN_COMMAND,
             "/sc", "WEEKLY",
             "/d", weekdays_str,
             "/st", f"{hour:02d}:{minute:02d}",
             "/ru", "SYSTEM",
             "/f",
-            "/rl", "HIGHEST"  # 使用最高權限運行
+            "/rl", "HIGHEST"  # Run with highest privileges
         ]
         
         try:
@@ -127,26 +126,26 @@ class ShutdownScheduler:
                 cmd,
                 capture_output=True,
                 text=True,
-                encoding='cp950'
+                encoding=SUBPROCESS_ENCODING
             )
             
             if result.returncode == 0:
                 logger.info("Windows task created successfully")
-                # 驗證任務是否確實創建
+                # Verify task was actually created
                 verify_result = subprocess.run(
                     ["schtasks", SCHTASKS_QUERY, "/tn", self.task_name],
                     capture_output=True,
                     text=True,
-                    encoding='cp950'
+                    encoding=SUBPROCESS_ENCODING
                 )
                 
                 if verify_result.returncode == 0:
                     logger.info("Task verified successfully")
                     return result
                 else:
-                    raise RuntimeError("任務創建後無法驗證")
+                    raise RuntimeError("Task verification failed after creation")
             else:
-                raise RuntimeError("創建任務失敗: " + result.stderr)
+                raise RuntimeError("Task creation failed: " + result.stderr)
                 
         except Exception as e:
             logger.error(f"Failed to create Windows task: {str(e)}")
@@ -158,12 +157,12 @@ class ShutdownScheduler:
         error_messages = []
 
         try:
-            # 首先列出所有任務
+            # First list all tasks
             list_result = subprocess.run(
                 ["schtasks", SCHTASKS_QUERY, "/fo", "csv", "/nh"],
                 capture_output=True,
                 text=True,
-                encoding='cp950'
+                encoding=SUBPROCESS_ENCODING
             )
             
             if list_result.returncode == 0:
@@ -172,14 +171,14 @@ class ShutdownScheduler:
                     # CSV 格式，第一個欄位是任務名稱
                     if ',' in task:
                         current_task_name = task.split(',')[0].strip('"')
-                        if "AutomaticShutdownScheduler" in current_task_name:
+                        if TASK_NAME in current_task_name:
                             logger.info(f"Found task: {current_task_name}")
-                            # 獲取詳細資訊
+                            # Get detailed information
                             detail_result = subprocess.run(
                                 ["schtasks", SCHTASKS_QUERY, "/tn", current_task_name, "/v", "/fo", "list"],
                                 capture_output=True,
                                 text=True,
-                                encoding='cp950'
+                                encoding=SUBPROCESS_ENCODING
                             )
                             
                             if detail_result.returncode == 0:
@@ -204,13 +203,13 @@ class ShutdownScheduler:
             logger.info(f"Found task info: {task_info}")
             return self._format_task_info(task_info)
             
-        # 如果沒有找到任何任務，嘗試使用 wmic
+        # If no task found, try using wmic
         try:
             wmic_result = subprocess.run(
                 ["wmic", "job", "list", "full"],
                 capture_output=True,
                 text=True,
-                encoding='cp950'
+                encoding=SUBPROCESS_ENCODING
             )
             
             if wmic_result.returncode == 0:

@@ -1,2 +1,11 @@
-tkinter>=8.6
-schedule>=1.1.0==1.2.0
+# Auto Shutdown Application Dependencies
+# Note: tkinter is included with Python installation
+
+# No external dependencies required - uses only Python standard library
+# The application uses:
+# - tkinter (built-in)
+# - subprocess (built-in) 
+# - json (built-in)
+# - pathlib (built-in)
+# - datetime (built-in)
+# - logging (built-in)

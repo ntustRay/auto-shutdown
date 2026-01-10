@@ -1,6 +1,8 @@
 """Modern theme colors and styling for the auto shutdown application"""
 import tkinter as tk
 from tkinter import ttk
+import platform
+import sys
 
 # Color scheme matching the spec
 COLORS = {
@@ -31,15 +33,63 @@ COLORS = {
     "border_dark": "#374151",
 }
 
+# Font fallback system for cross-platform compatibility
+def get_font_fallback():
+    """Get appropriate font family based on platform"""
+    system = platform.system()
+    
+    if system == "Windows":
+        # Windows font hierarchy
+        return [
+            "Microsoft JhengHei UI",
+            "Microsoft JhengHei", 
+            "Segoe UI",
+            "Tahoma",
+            "Arial",
+            "sans-serif"
+        ]
+    elif system == "Darwin":  # macOS
+        return [
+            "PingFang SC",
+            "Hiragino Sans GB",
+            "Helvetica Neue",
+            "Arial",
+            "sans-serif"
+        ]
+    else:  # Linux and others
+        return [
+            "Noto Sans CJK SC",
+            "WenQuanYi Micro Hei",
+            "DejaVu Sans",
+            "Arial",
+            "sans-serif"
+        ]
+
+def get_safe_font(base_font_name, size, style="normal"):
+    """Get font with fallback mechanism"""
+    font_families = get_font_fallback()
+    
+    # Try the requested font first, then fallback
+    for family in font_families:
+        try:
+            if family.lower() in base_font_name.lower():
+                return (family, size, style)
+        except (AttributeError, TypeError):
+            continue
+    
+    # Use first available fallback
+    return (font_families[0], size, style)
+
+# Font definitions with fallback support
 FONTS = {
-    "display_large": ("Microsoft JhengHei UI Light", 52, "normal"),
-    "display_medium": ("Microsoft JhengHei UI Light", 36, "normal"),
-    "title": ("Microsoft JhengHei UI", 20, "bold"),
-    "subtitle": ("Microsoft JhengHei UI", 11, "normal"),
-    "body": ("Microsoft JhengHei UI", 10, "normal"),
-    "button": ("Microsoft JhengHei UI", 11, "bold"),
-    "small": ("Microsoft JhengHei UI", 9, "normal"),
-    "tiny": ("Microsoft JhengHei UI", 8, "normal"),
+    "display_large": get_safe_font("Microsoft JhengHei UI Light", 52, "normal"),
+    "display_medium": get_safe_font("Microsoft JhengHei UI Light", 36, "normal"),
+    "title": get_safe_font("Microsoft JhengHei UI", 20, "bold"),
+    "subtitle": get_safe_font("Microsoft JhengHei UI", 11, "normal"),
+    "body": get_safe_font("Microsoft JhengHei UI", 10, "normal"),
+    "button": get_safe_font("Microsoft JhengHei UI", 11, "bold"),
+    "small": get_safe_font("Microsoft JhengHei UI", 9, "normal"),
+    "tiny": get_safe_font("Microsoft JhengHei UI", 8, "normal"),
 }
 
 

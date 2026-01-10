@@ -28,8 +28,9 @@ The application features a modern card-based UI design:
 ## Requirements
 
 - Windows 10/11
-- Python 3.6 or higher
+- Python 3.6 or higher (recommended 3.8+)
 - Administrator privileges (for creating scheduled tasks)
+- No external dependencies required (uses only Python standard library)
 
 ## Installation
 
