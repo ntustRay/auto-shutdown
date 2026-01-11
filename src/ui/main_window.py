@@ -721,42 +721,57 @@ class AutoShutdownWindow:
 
     def _load_saved_config(self):
         """Load saved configuration"""
+        # 檢查是否有執行中的排程
+        has_active = self.scheduler.has_active_schedule()
         config = self.scheduler.load_config()
-        if not config:
-            # No config, keep default status as inactive
-            return
 
-        try:
-            # Set weekday checkboxes
-            saved_weekdays = config.get("weekdays", [])
-            if saved_weekdays:
-                if all(isinstance(x, bool) for x in saved_weekdays):
-                    for var, enabled in zip(self.weekday_vars, saved_weekdays):
-                        var.set(enabled)
-                else:
-                    try:
-                        days = [int(x) for x in saved_weekdays]
-                        for i, var in enumerate(self.weekday_vars):
-                            var.set((i + 1) in days)
-                    except Exception:
-                        logger.debug("Unexpected format for saved weekdays, ignoring")
+        # 如果有執行中的排程且有配置，則加載配置
+        if has_active and config:
+            try:
+                # Set weekday checkboxes
+                saved_weekdays = config.get("weekdays", [])
+                if saved_weekdays:
+                    if all(isinstance(x, bool) for x in saved_weekdays):
+                        for var, enabled in zip(self.weekday_vars, saved_weekdays):
+                            var.set(enabled)
+                    else:
+                        try:
+                            days = [int(x) for x in saved_weekdays]
+                            for i, var in enumerate(self.weekday_vars):
+                                var.set((i + 1) in days)
+                        except Exception:
+                            logger.debug("Unexpected format for saved weekdays, ignoring")
 
-            # Set time
-            time_str = config.get("time")
-            if time_str:
-                hour, minute = map(int, time_str.split(":"))
-                self.hour_var.set(f"{hour:02d}")
-                self.minute_var.set(f"{minute:02d}")
+                # Set time
+                time_str = config.get("time")
+                if time_str:
+                    hour, minute = map(int, time_str.split(":"))
+                    self.hour_var.set(f"{hour:02d}")
+                    self.minute_var.set(f"{minute:02d}")
 
-            # Set execution mode
-            self.repeat_var.set(config.get("is_repeat", True))
+                # Set execution mode
+                self.repeat_var.set(config.get("is_repeat", True))
 
-            # Only mark as active if we successfully loaded a valid config
-            if saved_weekdays and time_str:
-                self._update_status("active", "已設定排程")
+                # Only mark as active if we successfully loaded a valid config
+                if saved_weekdays and time_str:
+                    self._update_status("active", "已設定排程")
 
-        except Exception:
-            logger.exception("Failed to load configuration")
+            except Exception:
+                logger.exception("Failed to load configuration")
+        else:
+            # 沒有執行中的排程，自動選擇當天星期和當前時間
+            now = datetime.now()
+
+            # 設定當前時間
+            self.hour_var.set(f"{now.hour:02d}")
+            self.minute_var.set(f"{now.minute:02d}")
+
+            # 設定當天星期（weekday() 返回 0-6，0是星期一）
+            today_weekday = now.weekday()
+            for i, var in enumerate(self.weekday_vars):
+                var.set(i == today_weekday)
+
+            logger.info(f"Auto-selected today ({WEEKDAY_NAMES[today_weekday]}) and current time {now.hour:02d}:{now.minute:02d}")
 
     def run(self):
         """Start the application"""

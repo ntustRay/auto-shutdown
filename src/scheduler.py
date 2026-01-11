@@ -248,3 +248,26 @@ class ShutdownScheduler:
 上次執行結果: {get_first_match(last_result_keys)}
 執行身分: {get_first_match(account_keys)}
 """
+    def has_active_schedule(self):
+        """檢查是否有執行中的排程"""
+        try:
+            # 列出所有任務
+            list_result = subprocess.run(
+                ["schtasks", SCHTASKS_QUERY, "/fo", "csv", "/nh"],
+                capture_output=True,
+                text=True,
+                encoding=SUBPROCESS_ENCODING
+            )
+
+            if list_result.returncode == 0:
+                tasks = list_result.stdout.splitlines()
+                for task in tasks:
+                    if ',' in task:
+                        current_task_name = task.split(',')[0].strip('"')
+                        if TASK_NAME in current_task_name:
+                            logger.info(f"Found active schedule: {current_task_name}")
+                            return True
+            return False
+        except Exception as e:
+            logger.error(f"Error checking active schedule: {str(e)}")
+            return False
