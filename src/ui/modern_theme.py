@@ -35,11 +35,11 @@ COLORS = {
 
 # Font fallback system for cross-platform compatibility
 def get_font_fallback():
-    """Get appropriate font family based on platform"""
+    """根據平台取得適當的字體系列"""
     system = platform.system()
     
     if system == "Windows":
-        # Windows font hierarchy
+        # Windows 字體層級
         return [
             "Microsoft JhengHei UI",
             "Microsoft JhengHei", 
@@ -48,7 +48,7 @@ def get_font_fallback():
             "Arial",
             "sans-serif"
         ]
-    elif system == "Darwin":  # macOS
+    elif system == "Darwin":  # macOS 系統
         return [
             "PingFang SC",
             "Hiragino Sans GB",
@@ -56,7 +56,7 @@ def get_font_fallback():
             "Arial",
             "sans-serif"
         ]
-    else:  # Linux and others
+    else:  # Linux 和其他系統
         return [
             "Noto Sans CJK SC",
             "WenQuanYi Micro Hei",
@@ -66,10 +66,10 @@ def get_font_fallback():
         ]
 
 def get_safe_font(base_font_name, size, style="normal"):
-    """Get font with fallback mechanism"""
+    """取得具有備用機制的字體"""
     font_families = get_font_fallback()
     
-    # Try the requested font first, then fallback
+    # 先嘗試要求的字體，然後備用
     for family in font_families:
         try:
             if family.lower() in base_font_name.lower():
@@ -77,10 +77,10 @@ def get_safe_font(base_font_name, size, style="normal"):
         except (AttributeError, TypeError):
             continue
     
-    # Use first available fallback
+    # 使用第一個可用的備用字體
     return (font_families[0], size, style)
 
-# Font definitions with fallback support
+# 具有備用支援的字體定義
 FONTS = {
     "display_large": get_safe_font("Microsoft JhengHei UI Light", 52, "normal"),
     "display_medium": get_safe_font("Microsoft JhengHei UI Light", 36, "normal"),
@@ -94,19 +94,19 @@ FONTS = {
 
 
 def configure_styles():
-    """Configure ttk styles for modern look"""
+    """配置現代外觀的 ttk 樣式"""
     style = ttk.Style()
 
-    # Use clam as base theme for better customization
+    # 使用 clam 作為基礎主題以獲得更好的自訂功能
     style.theme_use('clam')
 
-    # Configure main frame
+    # 配置主框架
     style.configure(
         "Modern.TFrame",
         background=COLORS["surface_light"]
     )
 
-    # Configure labels
+    # 配置標籤
     style.configure(
         "Title.TLabel",
         background=COLORS["surface_light"],
@@ -135,7 +135,7 @@ def configure_styles():
         font=FONTS["small"]
     )
 
-    # Primary button style
+    # 主要按鈕樣式
     style.configure(
         "Primary.TButton",
         background=COLORS["primary"],
@@ -149,7 +149,7 @@ def configure_styles():
         background=[("active", COLORS["primary_dark"]), ("pressed", COLORS["primary_dark"])]
     )
 
-    # Secondary button style
+    # 次要按鈕樣式
     style.configure(
         "Secondary.TButton",
         background=COLORS["bg_light"],

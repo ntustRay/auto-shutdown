@@ -1,4 +1,4 @@
-"""UI module for auto shutdown application"""
+"""自動關機應用程式的 UI 模組"""
 from .main_window import AutoShutdownWindow
 from .modern_theme import COLORS, FONTS, configure_styles
 from .modern_widgets import (

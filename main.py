@@ -1,13 +1,13 @@
-"""Main entry point for the auto shutdown application"""
+"""自動關機應用程式主入口點"""
 import logging
 from pathlib import Path
 from src.config import LOG_FILE_NAME
 
 
 def main():
-    """Application entry point"""
-    # Configure logging centrally so importing modules won't
-    # reconfigure handlers or write files unexpectedly.
+    """應用程式入口點"""
+    # 集中設定日誌記錄，避免匯入模組時
+    # 重新設定處理器或意外寫入檔案。
     log_path = Path.cwd() / LOG_FILE_NAME
     logging.basicConfig(
         level=logging.INFO,
@@ -18,7 +18,7 @@ def main():
         ]
     )
 
-    # Import UI after logging is configured so modules can use logging.getLogger
+    # 在日誌設定完成後匯入UI，讓模組可以使用logging.getLogger
     from src.ui.main_window import AutoShutdownWindow
 
     try:

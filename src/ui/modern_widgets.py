@@ -4,7 +4,7 @@ from .modern_theme import COLORS, FONTS
 
 
 class RoundedFrame(tk.Canvas):
-    """A frame with rounded corners"""
+    """具有圓角的框架"""
 
     def __init__(self, parent, bg_color=None, corner_radius=16, **kwargs):
         self.bg_color = bg_color or COLORS["surface_light"]
@@ -24,7 +24,7 @@ class RoundedFrame(tk.Canvas):
         w, h = self.winfo_width(), self.winfo_height()
         r = self.corner_radius
 
-        # Draw rounded rectangle
+        # 繪製圓角矩形
         self.create_polygon(
             r, 0, w - r, 0,
             w, 0, w, r,
@@ -37,13 +37,13 @@ class RoundedFrame(tk.Canvas):
             tags="rounded_bg"
         )
 
-        # Use arc for corners
+        # 使用弧線繪製角落
         self.create_arc(0, 0, 2 * r, 2 * r, start=90, extent=90, fill=self.bg_color, outline=self.bg_color, tags="rounded_bg")
         self.create_arc(w - 2 * r, 0, w, 2 * r, start=0, extent=90, fill=self.bg_color, outline=self.bg_color, tags="rounded_bg")
         self.create_arc(0, h - 2 * r, 2 * r, h, start=180, extent=90, fill=self.bg_color, outline=self.bg_color, tags="rounded_bg")
         self.create_arc(w - 2 * r, h - 2 * r, w, h, start=270, extent=90, fill=self.bg_color, outline=self.bg_color, tags="rounded_bg")
 
-        # Fill center
+        # 填充中心區域
         self.create_rectangle(r, 0, w - r, h, fill=self.bg_color, outline=self.bg_color, tags="rounded_bg")
         self.create_rectangle(0, r, w, h - r, fill=self.bg_color, outline=self.bg_color, tags="rounded_bg")
 
@@ -51,7 +51,7 @@ class RoundedFrame(tk.Canvas):
 
 
 class ModernToggle(tk.Canvas):
-    """Modern toggle switch widget"""
+    """現代化切換開關元件"""
 
     def __init__(self, parent, variable=None, command=None, **kwargs):
         self.width = kwargs.pop("width", 48)
@@ -79,16 +79,16 @@ class ModernToggle(tk.Canvas):
         self.delete("all")
         is_on = self.variable.get()
 
-        # Track colors
+        # 軌道顏色
         track_color = COLORS["primary"] if is_on else COLORS["inactive"]
 
-        # Draw track (rounded rectangle)
+        # 繪製軌道（圓角矩形）
         r = self.height // 2
         self.create_arc(0, 0, self.height, self.height, start=90, extent=180, fill=track_color, outline=track_color)
         self.create_arc(self.width - self.height, 0, self.width, self.height, start=270, extent=180, fill=track_color, outline=track_color)
         self.create_rectangle(r, 0, self.width - r, self.height, fill=track_color, outline=track_color)
 
-        # Draw knob
+        # 繪製圓鈕
         knob_x = self.width - self.height + self.knob_padding if is_on else self.knob_padding
         self.create_oval(
             knob_x, self.knob_padding,
@@ -104,7 +104,7 @@ class ModernToggle(tk.Canvas):
 
 
 class PillToggle(tk.Canvas):
-    """Pill-style toggle for options like 24h/12h"""
+    """膠囊樣式切換器，用於24小時/12小時等選項"""
 
     def __init__(self, parent, options, variable=None, command=None, **kwargs):
         self.options = options
@@ -134,12 +134,12 @@ class PillToggle(tk.Canvas):
     def _draw(self):
         self.delete("all")
 
-        # Draw background pill
+        # 繪製背景膠囊
         r = (self.button_height + self.padding * 2) // 2
         w = self.winfo_reqwidth()
         h = self.winfo_reqheight()
 
-        # Background
+        # 背景
         self.create_arc(0, 0, h, h, start=90, extent=180, fill=COLORS["surface_light"], outline=COLORS["surface_light"])
         self.create_arc(w - h, 0, w, h, start=270, extent=180, fill=COLORS["surface_light"], outline=COLORS["surface_light"])
         self.create_rectangle(r, 0, w - r, h, fill=COLORS["surface_light"], outline=COLORS["surface_light"])
@@ -151,7 +151,7 @@ class PillToggle(tk.Canvas):
             is_selected = opt == selected
 
             if is_selected:
-                # Draw selected pill
+                # 繪製選中的膠囊
                 br = self.button_height // 2
                 self.create_arc(x, self.padding, x + self.button_height, self.padding + self.button_height,
                                 start=90, extent=180, fill=COLORS["primary"], outline=COLORS["primary"])
@@ -161,7 +161,7 @@ class PillToggle(tk.Canvas):
                 self.create_rectangle(x + br, self.padding, x + self.button_width - br,
                                        self.padding + self.button_height, fill=COLORS["primary"], outline=COLORS["primary"])
 
-            # Draw text
+            # 繪製文字
             text_color = COLORS["text_white"] if is_selected else COLORS["text_sub"]
             self.create_text(
                 x + self.button_width // 2,
@@ -172,7 +172,7 @@ class PillToggle(tk.Canvas):
             )
 
     def _on_click(self, event):
-        # Determine which option was clicked
+        # 判斷點擊了哪個選項
         for i, opt in enumerate(self.options):
             x_start = self.padding + i * self.button_width
             x_end = x_start + self.button_width
@@ -184,7 +184,7 @@ class PillToggle(tk.Canvas):
 
 
 class CircularDayButton(tk.Canvas):
-    """Circular button for day selection"""
+    """圓形按鈕，用於日期選擇"""
 
     def __init__(self, parent, text, variable=None, command=None, **kwargs):
         self.size = kwargs.pop("size", 40)
@@ -210,7 +210,7 @@ class CircularDayButton(tk.Canvas):
         self.delete("all")
         is_selected = self.variable.get()
 
-        # Circle
+        # 圓形
         fill_color = COLORS["primary"] if is_selected else COLORS["surface_light"]
         outline_color = COLORS["primary"] if is_selected else COLORS["border"]
 
@@ -221,7 +221,7 @@ class CircularDayButton(tk.Canvas):
             width=1
         )
 
-        # Text
+        # 文字
         text_color = COLORS["text_white"] if is_selected else COLORS["text_sub"]
         self.create_text(
             self.size // 2,
@@ -238,7 +238,7 @@ class CircularDayButton(tk.Canvas):
 
 
 class ModernButton(tk.Canvas):
-    """Modern rounded button with optional icon and shadow effect"""
+    """現代化圓角按鈕，支援可選圖標和陰影效果"""
 
     def __init__(self, parent, text, command=None, primary=True, icon=None, **kwargs):
         self.text = text
@@ -248,7 +248,7 @@ class ModernButton(tk.Canvas):
         self.width = kwargs.pop("width", 200)
         self.height = kwargs.pop("height", 44)
 
-        # Add extra height for shadow if primary
+        # 如果是主要按鈕，為陰影增加額外高度
         canvas_height = self.height + (4 if primary else 0)
 
         super().__init__(
@@ -274,7 +274,7 @@ class ModernButton(tk.Canvas):
 
         if self.primary:
             fill_color = COLORS["primary_dark"] if self.is_hovered else COLORS["primary"]
-            shadow_color = "#4338ca"  # Darker purple for shadow
+            shadow_color = "#4338ca"  # 陰影用深紫色
         else:
             fill_color = COLORS["border"] if self.is_hovered else COLORS["bg_light"]
             shadow_color = None
@@ -285,15 +285,15 @@ class ModernButton(tk.Canvas):
         w, h = self.width, self.height
         y_offset = 2 if self.is_pressed and self.primary else 0
 
-        # Draw shadow for primary button
+        # 為主要按鈕繪製陰影
         if self.primary and not self.is_pressed:
             shadow_y = 4
             self._draw_rounded_rect(0, shadow_y, w, h + shadow_y, r, shadow_color)
 
-        # Draw main button
+        # 繪製主按鈕
         self._draw_rounded_rect(0, y_offset, w, h + y_offset, r, fill_color)
 
-        # Draw text
+        # 繪製文字
         display_text = self.text
 
         self.create_text(
@@ -305,7 +305,7 @@ class ModernButton(tk.Canvas):
         )
 
     def _draw_rounded_rect(self, x, y, w, h, r, fill_color):
-        """Helper to draw a rounded rectangle"""
+        """繪製圓角矩形的輔助函數"""
         self.create_arc(x, y, x + 2 * r, y + 2 * r, start=90, extent=90, fill=fill_color, outline=fill_color)
         self.create_arc(w - 2 * r, y, w, y + 2 * r, start=0, extent=90, fill=fill_color, outline=fill_color)
         self.create_arc(x, h - 2 * r, x + 2 * r, h, start=180, extent=90, fill=fill_color, outline=fill_color)
@@ -321,7 +321,7 @@ class ModernButton(tk.Canvas):
         self.is_pressed = False
         self._draw()
         if self.command:
-            # Check if release is within button bounds
+            # 檢查釋放是否在按鈕範圍內
             if 0 <= event.x <= self.width and 0 <= event.y <= self.height:
                 self.command()
 
@@ -336,18 +336,18 @@ class ModernButton(tk.Canvas):
 
 
 class CollapsibleSection(tk.Frame):
-    """Collapsible section with header"""
+    """可折疊的區段，帶有標頭"""
 
     def __init__(self, parent, title, **kwargs):
         super().__init__(parent, bg=COLORS["surface_light"], **kwargs)
 
         self.is_expanded = False
 
-        # Header frame
+        # 標頭框架
         self.header = tk.Frame(self, bg=COLORS["surface_light"], cursor="hand2")
         self.header.pack(fill="x", padx=0, pady=0)
 
-        # Icon
+        # 圖標
         self.icon_label = tk.Label(
             self.header,
             text="\u24d8",  # Info circle
@@ -357,7 +357,7 @@ class CollapsibleSection(tk.Frame):
         )
         self.icon_label.pack(side="left", padx=(0, 8))
 
-        # Title
+        # 標題
         self.title_label = tk.Label(
             self.header,
             text=title,
@@ -367,7 +367,7 @@ class CollapsibleSection(tk.Frame):
         )
         self.title_label.pack(side="left")
 
-        # Arrow
+        # 箭頭
         self.arrow_label = tk.Label(
             self.header,
             text="\u25bc",
@@ -377,10 +377,10 @@ class CollapsibleSection(tk.Frame):
         )
         self.arrow_label.pack(side="right")
 
-        # Content frame
+        # 內容框架
         self.content = tk.Frame(self, bg=COLORS["bg_light"])
 
-        # Bindings
+        # 綁定事件
         self.header.bind("<Button-1>", self._toggle)
         self.title_label.bind("<Button-1>", self._toggle)
         self.arrow_label.bind("<Button-1>", self._toggle)
@@ -396,12 +396,12 @@ class CollapsibleSection(tk.Frame):
             self.arrow_label.config(text="\u25bc")
 
     def add_content(self, widget):
-        """Add a widget to the content area"""
+        """將元件加入內容區域"""
         widget.pack(in_=self.content, fill="x", padx=16, pady=4)
 
 
 class StatusIndicator(tk.Frame):
-    """Status indicator with colored dot"""
+    """帶有彩色圓點的狀態指示器"""
 
     def __init__(self, parent, **kwargs):
         super().__init__(parent, bg=kwargs.pop("bg", COLORS["surface_light"]), **kwargs)
@@ -427,7 +427,7 @@ class StatusIndicator(tk.Frame):
         self.set_status("inactive", "未設定排程")
 
     def set_status(self, status, text):
-        """Set status: 'active', 'inactive', 'warning', 'error'"""
+        """設定狀態：'active'、'inactive'、'warning'、'error'"""
         colors = {
             "active": COLORS["success"],
             "inactive": COLORS["error"],

@@ -1,10 +1,10 @@
-"""Custom time selection frame with 12/24 hour format support"""
+"""自訂時間選擇框架，支援12/24小時格式"""
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 
 class EnhancedTimeFrame(ttk.LabelFrame):
-    """Enhanced time selection frame with format switching and validation"""
+    """增強的時間選擇框架，具有格式切換和驗證功能"""
     
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
@@ -13,19 +13,19 @@ class EnhancedTimeFrame(ttk.LabelFrame):
         self._setup_bindings()
     
     def _setup_variables(self):
-        """Initialize tkinter variables"""
+        """初始化 tkinter 變數"""
         self.format_var = tk.StringVar(value="24")
         self.hour_var = tk.StringVar()
         self.minute_var = tk.StringVar()
         self.ampm_var = tk.StringVar(value="AM")
     
     def _create_widgets(self):
-        """Create and arrange widgets"""
+        """建立和排列元件"""
         self._create_format_selector()
         self._create_time_selector()
     
     def _create_format_selector(self):
-        """Create time format selection radio buttons"""
+        """建立時間格式選擇的單選按鈕"""
         format_frame = ttk.Frame(self)
         format_frame.pack(fill="x", padx=5, pady=5)
         
@@ -39,11 +39,11 @@ class EnhancedTimeFrame(ttk.LabelFrame):
             ).pack(side="left", padx=10)
     
     def _create_time_selector(self):
-        """Create time selection widgets"""
+        """建立時間選擇元件"""
         time_frame = ttk.Frame(self)
         time_frame.pack(fill="x", padx=5, pady=5)
         
-        # Hour selector
+        # 小時選擇器
         ttk.Label(time_frame, text="時:").pack(side="left")
         self.hour_combo = ttk.Combobox(
             time_frame,
@@ -53,7 +53,7 @@ class EnhancedTimeFrame(ttk.LabelFrame):
         )
         self.hour_combo.pack(side="left", padx=5)
         
-        # Minute selector
+        # 分鐘選擇器
         ttk.Label(time_frame, text="分:").pack(side="left")
         self.minute_combo = ttk.Combobox(
             time_frame,
@@ -64,7 +64,7 @@ class EnhancedTimeFrame(ttk.LabelFrame):
         )
         self.minute_combo.pack(side="left", padx=5)
         
-        # AM/PM selector
+        # AM/PM 選擇器
         self.ampm_combo = ttk.Combobox(
             time_frame,
             textvariable=self.ampm_var,
@@ -78,12 +78,12 @@ class EnhancedTimeFrame(ttk.LabelFrame):
         self.set_current_time()
     
     def _setup_bindings(self):
-        """Setup widget event bindings"""
+        """設定元件事件綁定"""
         for widget in (self.hour_combo, self.minute_combo, self.ampm_combo):
             widget.bind('<<ComboboxSelected>>', self._validate_time)
     
     def _update_time_format(self):
-        """Update time format and hour options"""
+        """更新時間格式和小時選項"""
         is_24h = self.format_var.get() == "24"
         
         self.hour_combo['values'] = [
@@ -98,7 +98,7 @@ class EnhancedTimeFrame(ttk.LabelFrame):
         self.set_current_time()
     
     def set_current_time(self):
-        """Set current time in the selectors"""
+        """在選擇器中設定目前時間"""
         now = datetime.now()
         hour = now.hour
         
@@ -111,7 +111,7 @@ class EnhancedTimeFrame(ttk.LabelFrame):
         self.minute_var.set(f"{now.minute:02d}")
     
     def _validate_time(self, event=None):
-        """Validate time input"""
+        """驗證時間輸入"""
         try:
             hour = int(self.hour_var.get())
             minute = int(self.minute_var.get())
@@ -132,7 +132,7 @@ class EnhancedTimeFrame(ttk.LabelFrame):
             return False
     
     def get_time_24h(self):
-        """Get time in 24-hour format"""
+        """取得24小時格式的時間"""
         if not self._validate_time():
             return None
         
@@ -148,7 +148,7 @@ class EnhancedTimeFrame(ttk.LabelFrame):
         return f"{hour:02d}:{minute:02d}"
     
     def set_time(self, time_str, time_format="24"):
-        """Set time from string"""
+        """從字串設定時間"""
         try:
             hour, minute = map(int, time_str.split(":"))
             self.format_var.set(time_format)

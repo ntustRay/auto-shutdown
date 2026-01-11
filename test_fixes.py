@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify that all fixes work correctly
+測試腳本，用於驗證所有修復是否正常工作
 """
 
 import sys
@@ -8,25 +8,25 @@ import traceback
 from pathlib import Path
 
 def test_imports():
-    """Test that all modules can be imported without errors"""
+    """測試所有模組能否無錯誤匯入"""
     try:
         print("Testing imports...")
         
-        # Test config import
+        # 測試配置匯入
         import src.config as config
-        print("[OK] Config import successful")
+        print("[OK] 配置匯入成功")
         
-        # Test scheduler import
+        # 測試排程器匯入
         from src.scheduler import ShutdownScheduler
-        print("[OK] Scheduler import successful")
+        print("[OK] 排程器匯入成功")
         
-        # Test theme import
+        # 測試主題匯入
         from src.ui.modern_theme import COLORS, FONTS
-        print("[OK] Theme import successful")
+        print("[OK] 主題匯入成功")
         
-        # Test widgets import
+        # 測試元件匯入
         from src.ui.modern_widgets import ModernButton
-        print("[OK] Widgets import successful")
+        print("[OK] 元件匯入成功")
         
         return True
         
@@ -36,7 +36,7 @@ def test_imports():
         return False
 
 def test_constants():
-    """Test that constants are properly defined"""
+    """測試常數是否正確定義"""
     try:
         import src.config as config
         
@@ -56,7 +56,7 @@ def test_constants():
         return False
 
 def test_scheduler_creation():
-    """Test that scheduler can be created without errors"""
+    """測試排程器能否無錯誤建立"""
     try:
         from src.scheduler import ShutdownScheduler
         
@@ -73,8 +73,8 @@ def test_scheduler_creation():
         return False
 
 def main():
-    """Run all tests"""
-    print("Running auto-shutdown fix verification tests...\n")
+    """執行所有測試"""
+    print("執行自動關機修復驗證測試...\n")
     
     tests = [
         test_imports,
