@@ -38,14 +38,19 @@ LOG_FILE_NAME = "auto_shutdown.log"
 TASK_NAME = "AutomaticShutdownScheduler"
 
 # Windows工作排程器的日期對應
-DAY_MAPPING = {
-    1: "MON", 2: "TUE", 3: "WED", 4: "THU",
-    5: "FRI", 6: "SAT", 7: "SUN"
-}
+DAY_MAPPING = {1: "MON", 2: "TUE", 3: "WED", 4: "THU", 5: "FRI", 6: "SAT", 7: "SUN"}
 
 # 中文的星期名稱
 WEEKDAY_NAMES = ["一", "二", "三", "四", "五", "六", "日"]
-WEEKDAY_FULL_NAMES = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
+WEEKDAY_FULL_NAMES = [
+    "星期一",
+    "星期二",
+    "星期三",
+    "星期四",
+    "星期五",
+    "星期六",
+    "星期日",
+]
 
 # 預設選中的星期（一和五）
 DEFAULT_SELECTED_DAYS = {0, 4}
@@ -61,19 +66,24 @@ MESSAGES = {
     "success_title": "成功",
     "schedule_status": "排程狀態",
     "active_status": "已設定排程",
-    "inactive_status": "未設定排程"
+    "inactive_status": "未設定排程",
 }
 
 # 說明提示
 HELP_TIPS = [
     "• 選擇要執行的星期 (可複選)",
     "• 系統會在關機前1分鐘顯示提醒",
-    "• 設定會自動保存，重開機後依然有效"
+    "• 設定會自動保存，重開機後依然有效",
 ]
 
 # 子程式命令
-SHUTDOWN_COMMAND = "shutdown /s /t 60 /c \"系統將在1分鐘後關機\""
+SHUTDOWN_COMMAND = 'shutdown /s /t 60 /c "系統將在1分鐘後關機"'
 
 # 編碼設定
-SUBPROCESS_ENCODING = "cp950"  # 適用於Windows中文系統
+import locale
+
+try:
+    SUBPROCESS_ENCODING = locale.getpreferredencoding()
+except:
+    SUBPROCESS_ENCODING = "utf-8"
 CONFIG_ENCODING = "utf-8"

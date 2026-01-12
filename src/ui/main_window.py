@@ -1,22 +1,42 @@
 """Modern main window for the auto shutdown application"""
+
 import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
 from ..scheduler import ShutdownScheduler
 from .modern_theme import COLORS, FONTS, configure_styles
 from .modern_widgets import (
-    PillToggle, CircularDayButton, ModernToggle,
-    ModernButton, CollapsibleSection, StatusIndicator
+    PillToggle,
+    CircularDayButton,
+    ModernToggle,
+    ModernButton,
+    CollapsibleSection,
+    StatusIndicator,
 )
 from ..config import (
-    WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_RESIZABLE,
-    DEFAULT_HOUR, DEFAULT_MINUTE, DEFAULT_TIME_FORMAT, DEFAULT_REPEAT,
-    TIME_CANVAS_HEIGHT, REPEAT_CANVAS_HEIGHT, 
-    HELP_CANVAS_COLLAPSED, HELP_CANVAS_EXPANDED,
-    PADDING_MAIN, PADDING_SECTION, PADDING_WIDGET, CORNER_RADIUS,
-    COLON_BLINK_INTERVAL, WEEKDAY_NAMES, WEEKDAY_FULL_NAMES,
-    DEFAULT_SELECTED_DAYS, MESSAGES, HELP_TIPS,
-    BUTTON_HEIGHT_LARGE, BUTTON_HEIGHT_MEDIUM
+    WINDOW_WIDTH,
+    WINDOW_HEIGHT,
+    WINDOW_RESIZABLE,
+    DEFAULT_HOUR,
+    DEFAULT_MINUTE,
+    DEFAULT_TIME_FORMAT,
+    DEFAULT_REPEAT,
+    TIME_CANVAS_HEIGHT,
+    REPEAT_CANVAS_HEIGHT,
+    HELP_CANVAS_COLLAPSED,
+    HELP_CANVAS_EXPANDED,
+    PADDING_MAIN,
+    PADDING_SECTION,
+    PADDING_WIDGET,
+    CORNER_RADIUS,
+    COLON_BLINK_INTERVAL,
+    WEEKDAY_NAMES,
+    WEEKDAY_FULL_NAMES,
+    DEFAULT_SELECTED_DAYS,
+    MESSAGES,
+    HELP_TIPS,
+    BUTTON_HEIGHT_LARGE,
+    BUTTON_HEIGHT_MEDIUM,
 )
 import logging
 
@@ -56,7 +76,9 @@ class AutoShutdownWindow:
         """Create the modern user interface"""
         # Main container
         self.main_container = tk.Frame(self.root, bg=COLORS["surface_light"])
-        self.main_container.pack(fill="both", expand=True, padx=PADDING_MAIN, pady=PADDING_MAIN)
+        self.main_container.pack(
+            fill="both", expand=True, padx=PADDING_MAIN, pady=PADDING_MAIN
+        )
 
         # Header section
         self._create_header()
@@ -82,14 +104,14 @@ class AutoShutdownWindow:
     def _create_header(self):
         """Create header with title and subtitle"""
         header_frame = tk.Frame(self.main_container, bg=COLORS["surface_light"])
-        header_frame.pack(fill="x", pady=(PADDING_WIDGET//2, PADDING_SECTION))
+        header_frame.pack(fill="x", pady=(PADDING_WIDGET // 2, PADDING_SECTION))
 
         title = tk.Label(
             header_frame,
             text="自動關機系統",
             font=FONTS["title"],
             fg=COLORS["text_main"],
-            bg=COLORS["surface_light"]
+            bg=COLORS["surface_light"],
         )
         title.pack(anchor="w")
 
@@ -98,7 +120,7 @@ class AutoShutdownWindow:
             text="智慧排程管理您的設備",
             font=FONTS["subtitle"],
             fg=COLORS["text_sub"],
-            bg=COLORS["surface_light"]
+            bg=COLORS["surface_light"],
         )
         subtitle.pack(anchor="w", pady=(2, 0))
 
@@ -113,7 +135,7 @@ class AutoShutdownWindow:
             outer_frame,
             bg=COLORS["surface_light"],
             highlightthickness=0,
-            height=TIME_CANVAS_HEIGHT
+            height=TIME_CANVAS_HEIGHT,
         )
         time_canvas.pack(fill="x")
 
@@ -124,14 +146,72 @@ class AutoShutdownWindow:
             h = 200
             r = 16
             # Draw rounded rectangle
-            time_canvas.create_arc(0, 0, 2*r, 2*r, start=90, extent=90, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
-            time_canvas.create_arc(w-2*r, 0, w, 2*r, start=0, extent=90, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
-            time_canvas.create_arc(0, h-2*r, 2*r, h, start=180, extent=90, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
-            time_canvas.create_arc(w-2*r, h-2*r, w, h, start=270, extent=90, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
-            time_canvas.create_rectangle(r, 0, w-r, h, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
-            time_canvas.create_rectangle(0, r, w, h-r, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
+            time_canvas.create_arc(
+                0,
+                0,
+                2 * r,
+                2 * r,
+                start=90,
+                extent=90,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
+            time_canvas.create_arc(
+                w - 2 * r,
+                0,
+                w,
+                2 * r,
+                start=0,
+                extent=90,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
+            time_canvas.create_arc(
+                0,
+                h - 2 * r,
+                2 * r,
+                h,
+                start=180,
+                extent=90,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
+            time_canvas.create_arc(
+                w - 2 * r,
+                h - 2 * r,
+                w,
+                h,
+                start=270,
+                extent=90,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
+            time_canvas.create_rectangle(
+                r,
+                0,
+                w - r,
+                h,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
+            time_canvas.create_rectangle(
+                0,
+                r,
+                w,
+                h - r,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
             # Top accent line
-            time_canvas.create_rectangle(0, 0, w, 3, fill=COLORS["primary"], outline=COLORS["primary"], tags="bg")
+            time_canvas.create_rectangle(
+                0, 0, w, 3, fill=COLORS["primary"], outline=COLORS["primary"], tags="bg"
+            )
             time_canvas.tag_lower("bg")
 
         time_canvas.bind("<Configure>", draw_rounded_bg)
@@ -150,7 +230,7 @@ class AutoShutdownWindow:
             variable=self.time_format_var,
             command=self._on_format_change,
             button_width=55,
-            button_height=26
+            button_height=26,
         )
         self.format_toggle.pack()
 
@@ -165,7 +245,7 @@ class AutoShutdownWindow:
             font=FONTS["display_large"],
             fg=COLORS["primary"],
             bg=COLORS["bg_light"],
-            cursor="hand2"
+            cursor="hand2",
         )
         self.hour_label.pack(side="left")
         self.hour_label.bind("<Button-1>", self._show_hour_picker)
@@ -176,7 +256,7 @@ class AutoShutdownWindow:
             text=":",
             font=FONTS["display_large"],
             fg=COLORS["text_main"],
-            bg=COLORS["bg_light"]
+            bg=COLORS["bg_light"],
         )
         self.colon_label.pack(side="left")
 
@@ -187,7 +267,7 @@ class AutoShutdownWindow:
             font=FONTS["display_large"],
             fg=COLORS["primary"],
             bg=COLORS["bg_light"],
-            cursor="hand2"
+            cursor="hand2",
         )
         self.minute_label.pack(side="left")
         self.minute_label.bind("<Button-1>", self._show_minute_picker)
@@ -200,7 +280,7 @@ class AutoShutdownWindow:
             font=FONTS["subtitle"],
             fg=COLORS["text_sub"],
             bg=COLORS["bg_light"],
-            cursor="hand2"
+            cursor="hand2",
         )
         self.ampm_label.bind("<Button-1>", self._toggle_ampm)
 
@@ -210,7 +290,7 @@ class AutoShutdownWindow:
             text="設定執行時間",
             font=FONTS["tiny"],
             fg=COLORS["text_sub"],
-            bg=COLORS["bg_light"]
+            bg=COLORS["bg_light"],
         )
         time_subtitle.pack(pady=(8, 0))
 
@@ -228,7 +308,7 @@ class AutoShutdownWindow:
             text="重複週期",
             font=("Microsoft JhengHei UI", 11, "bold"),
             fg=COLORS["text_main"],
-            bg=COLORS["surface_light"]
+            bg=COLORS["surface_light"],
         ).pack(side="left")
 
         select_all_label = tk.Label(
@@ -237,7 +317,7 @@ class AutoShutdownWindow:
             font=FONTS["small"],
             fg=COLORS["primary"],
             bg=COLORS["surface_light"],
-            cursor="hand2"
+            cursor="hand2",
         )
         select_all_label.pack(side="right")
         select_all_label.bind("<Button-1>", self._select_all_days)
@@ -255,12 +335,7 @@ class AutoShutdownWindow:
             var = tk.BooleanVar(value=(i in DEFAULT_SELECTED_DAYS))
             self.weekday_vars.append(var)
 
-            btn = CircularDayButton(
-                days_frame,
-                text=name,
-                variable=var,
-                size=44
-            )
+            btn = CircularDayButton(days_frame, text=name, variable=var, size=44)
             btn.grid(row=0, column=i, padx=2, pady=2)
 
     def _create_repeat_section(self):
@@ -274,7 +349,7 @@ class AutoShutdownWindow:
             outer_frame,
             bg=COLORS["surface_light"],
             highlightthickness=0,
-            height=REPEAT_CANVAS_HEIGHT
+            height=REPEAT_CANVAS_HEIGHT,
         )
         repeat_canvas.pack(fill="x")
 
@@ -284,12 +359,68 @@ class AutoShutdownWindow:
             w = repeat_canvas.winfo_width()
             h = 72
             r = 16
-            repeat_canvas.create_arc(0, 0, 2*r, 2*r, start=90, extent=90, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
-            repeat_canvas.create_arc(w-2*r, 0, w, 2*r, start=0, extent=90, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
-            repeat_canvas.create_arc(0, h-2*r, 2*r, h, start=180, extent=90, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
-            repeat_canvas.create_arc(w-2*r, h-2*r, w, h, start=270, extent=90, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
-            repeat_canvas.create_rectangle(r, 0, w-r, h, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
-            repeat_canvas.create_rectangle(0, r, w, h-r, fill=COLORS["bg_light"], outline=COLORS["bg_light"], tags="bg")
+            repeat_canvas.create_arc(
+                0,
+                0,
+                2 * r,
+                2 * r,
+                start=90,
+                extent=90,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
+            repeat_canvas.create_arc(
+                w - 2 * r,
+                0,
+                w,
+                2 * r,
+                start=0,
+                extent=90,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
+            repeat_canvas.create_arc(
+                0,
+                h - 2 * r,
+                2 * r,
+                h,
+                start=180,
+                extent=90,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
+            repeat_canvas.create_arc(
+                w - 2 * r,
+                h - 2 * r,
+                w,
+                h,
+                start=270,
+                extent=90,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
+            repeat_canvas.create_rectangle(
+                r,
+                0,
+                w - r,
+                h,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
+            repeat_canvas.create_rectangle(
+                0,
+                r,
+                w,
+                h - r,
+                fill=COLORS["bg_light"],
+                outline=COLORS["bg_light"],
+                tags="bg",
+            )
             repeat_canvas.tag_lower("bg")
 
         repeat_canvas.bind("<Configure>", draw_rounded_bg)
@@ -303,15 +434,19 @@ class AutoShutdownWindow:
 
         # Icon circle
         icon_canvas = tk.Canvas(
-            left_frame,
-            width=40,
-            height=40,
-            bg=COLORS["bg_light"],
-            highlightthickness=0
+            left_frame, width=40, height=40, bg=COLORS["bg_light"], highlightthickness=0
         )
         icon_canvas.pack(side="left", padx=(0, 12))
-        icon_canvas.create_oval(2, 2, 38, 38, fill=COLORS["surface_light"], outline=COLORS["surface_light"])
-        icon_canvas.create_text(20, 20, text="\u21bb", font=("Microsoft JhengHei UI", 16), fill=COLORS["primary"])
+        icon_canvas.create_oval(
+            2, 2, 38, 38, fill=COLORS["surface_light"], outline=COLORS["surface_light"]
+        )
+        icon_canvas.create_text(
+            20,
+            20,
+            text="\u21bb",
+            font=("Microsoft JhengHei UI", 16),
+            fill=COLORS["primary"],
+        )
 
         # Text
         text_frame = tk.Frame(left_frame, bg=COLORS["bg_light"])
@@ -322,7 +457,7 @@ class AutoShutdownWindow:
             text="重複執行",
             font=("Microsoft JhengHei UI", 11, "bold"),
             fg=COLORS["text_main"],
-            bg=COLORS["bg_light"]
+            bg=COLORS["bg_light"],
         ).pack(anchor="w")
 
         tk.Label(
@@ -330,15 +465,12 @@ class AutoShutdownWindow:
             text="每週固定時間執行關機",
             font=FONTS["small"],
             fg=COLORS["text_sub"],
-            bg=COLORS["bg_light"]
+            bg=COLORS["bg_light"],
         ).pack(anchor="w")
 
         # Right side - toggle
         self.repeat_toggle = ModernToggle(
-            inner_frame,
-            variable=self.repeat_var,
-            width=48,
-            height=24
+            inner_frame, variable=self.repeat_var, width=48, height=24
         )
         self.repeat_toggle.pack(side="right")
 
@@ -353,7 +485,7 @@ class AutoShutdownWindow:
             outer_frame,
             bg=COLORS["surface_light"],
             highlightthickness=0,
-            height=HELP_CANVAS_COLLAPSED
+            height=HELP_CANVAS_COLLAPSED,
         )
         help_canvas.pack(fill="x")
         self.help_canvas = help_canvas  # Store reference for height updates
@@ -365,29 +497,87 @@ class AutoShutdownWindow:
             h = help_canvas.winfo_height()
             r = 16
             # Border
-            help_canvas.create_arc(0, 0, 2*r, 2*r, start=90, extent=90, outline=COLORS["border"], style="arc", width=1, tags="bg")
-            help_canvas.create_arc(w-2*r, 0, w, 2*r, start=0, extent=90, outline=COLORS["border"], style="arc", width=1, tags="bg")
-            help_canvas.create_arc(0, h-2*r, 2*r, h, start=180, extent=90, outline=COLORS["border"], style="arc", width=1, tags="bg")
-            help_canvas.create_arc(w-2*r, h-2*r, w, h, start=270, extent=90, outline=COLORS["border"], style="arc", width=1, tags="bg")
-            help_canvas.create_line(r, 0, w-r, 0, fill=COLORS["border"], tags="bg")
-            help_canvas.create_line(r, h, w-r, h, fill=COLORS["border"], tags="bg")
-            help_canvas.create_line(0, r, 0, h-r, fill=COLORS["border"], tags="bg")
-            help_canvas.create_line(w, r, w, h-r, fill=COLORS["border"], tags="bg")
+            help_canvas.create_arc(
+                0,
+                0,
+                2 * r,
+                2 * r,
+                start=90,
+                extent=90,
+                outline=COLORS["border"],
+                style="arc",
+                width=1,
+                tags="bg",
+            )
+            help_canvas.create_arc(
+                w - 2 * r,
+                0,
+                w,
+                2 * r,
+                start=0,
+                extent=90,
+                outline=COLORS["border"],
+                style="arc",
+                width=1,
+                tags="bg",
+            )
+            help_canvas.create_arc(
+                0,
+                h - 2 * r,
+                2 * r,
+                h,
+                start=180,
+                extent=90,
+                outline=COLORS["border"],
+                style="arc",
+                width=1,
+                tags="bg",
+            )
+            help_canvas.create_arc(
+                w - 2 * r,
+                h - 2 * r,
+                w,
+                h,
+                start=270,
+                extent=90,
+                outline=COLORS["border"],
+                style="arc",
+                width=1,
+                tags="bg",
+            )
+            help_canvas.create_line(r, 0, w - r, 0, fill=COLORS["border"], tags="bg")
+            help_canvas.create_line(r, h, w - r, h, fill=COLORS["border"], tags="bg")
+            help_canvas.create_line(0, r, 0, h - r, fill=COLORS["border"], tags="bg")
+            help_canvas.create_line(w, r, w, h - r, fill=COLORS["border"], tags="bg")
             # Fill inside
-            help_canvas.create_rectangle(r, 1, w-r, h-1, fill=COLORS["surface_light"], outline=COLORS["surface_light"], tags="bg")
-            help_canvas.create_rectangle(1, r, w-1, h-r, fill=COLORS["surface_light"], outline=COLORS["surface_light"], tags="bg")
+            help_canvas.create_rectangle(
+                r,
+                1,
+                w - r,
+                h - 1,
+                fill=COLORS["surface_light"],
+                outline=COLORS["surface_light"],
+                tags="bg",
+            )
+            help_canvas.create_rectangle(
+                1,
+                r,
+                w - 1,
+                h - r,
+                fill=COLORS["surface_light"],
+                outline=COLORS["surface_light"],
+                tags="bg",
+            )
             help_canvas.tag_lower("bg")
 
         help_canvas.bind("<Configure>", draw_rounded_border)
 
-        self.help_section = CollapsibleSection(
-            help_canvas,
-            title="使用說明與提示"
-        )
+        self.help_section = CollapsibleSection(help_canvas, title="使用說明與提示")
         self.help_section.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.9)
 
         # Store original toggle function and override
         original_toggle = self.help_section._toggle
+
         def new_toggle(event=None):
             original_toggle(event)
             # Update canvas height
@@ -395,6 +585,7 @@ class AutoShutdownWindow:
                 self.help_canvas.config(height=HELP_CANVAS_EXPANDED)
             else:
                 self.help_canvas.config(height=HELP_CANVAS_COLLAPSED)
+
         self.help_section._toggle = new_toggle
         self.help_section.header.bind("<Button-1>", new_toggle)
         self.help_section.title_label.bind("<Button-1>", new_toggle)
@@ -410,7 +601,7 @@ class AutoShutdownWindow:
                 fg=COLORS["text_sub"],
                 bg=COLORS["bg_light"],
                 anchor="w",
-                justify="left"
+                justify="left",
             )
             tip_label.pack(fill="x", padx=8, pady=2)
 
@@ -419,7 +610,9 @@ class AutoShutdownWindow:
         status_frame = tk.Frame(self.main_container, bg=COLORS["surface_light"])
         status_frame.pack(fill="x", pady=(0, 16))
 
-        self.status_indicator = StatusIndicator(status_frame, bg=COLORS["surface_light"])
+        self.status_indicator = StatusIndicator(
+            status_frame, bg=COLORS["surface_light"]
+        )
         self.status_indicator.pack()
 
     def _create_action_buttons(self):
@@ -430,11 +623,11 @@ class AutoShutdownWindow:
         # Primary button - Set shutdown
         self.set_button = ModernButton(
             buttons_frame,
-            text="\u23FB  設定關機",
+            text="\u23fb  設定關機",
             command=self._schedule_shutdown,
             primary=True,
             width=WINDOW_WIDTH - 40,  # Account for padding
-            height=BUTTON_HEIGHT_LARGE
+            height=BUTTON_HEIGHT_LARGE,
         )
         self.set_button.pack(pady=(0, PADDING_WIDGET))
 
@@ -448,7 +641,7 @@ class AutoShutdownWindow:
             command=self._cancel_shutdown,
             primary=False,
             width=182,
-            height=BUTTON_HEIGHT_MEDIUM
+            height=BUTTON_HEIGHT_MEDIUM,
         )
         self.cancel_button.pack(side="left")
 
@@ -458,14 +651,16 @@ class AutoShutdownWindow:
             command=self._check_schedule,
             primary=False,
             width=182,
-            height=BUTTON_HEIGHT_MEDIUM
+            height=BUTTON_HEIGHT_MEDIUM,
         )
         self.check_button.pack(side="right")
 
     def _start_colon_animation(self):
         """Animate the colon blinking"""
         self.colon_visible = not self.colon_visible
-        self.colon_label.config(fg=COLORS["text_main"] if self.colon_visible else COLORS["bg_light"])
+        self.colon_label.config(
+            fg=COLORS["text_main"] if self.colon_visible else COLORS["bg_light"]
+        )
         self.root.after(COLON_BLINK_INTERVAL, self._start_colon_animation)
 
     def _on_format_change(self):
@@ -476,10 +671,13 @@ class AutoShutdownWindow:
             self.ampm_label.pack_forget()
             # Convert from 12h to 24h if needed
             hour = int(self.hour_var.get())
-            if self.ampm_var.get() == "PM" and hour != 12:
+            ampm = self.ampm_var.get()
+
+            if ampm == "PM" and hour != 12:
                 hour += 12
-            elif self.ampm_var.get() == "AM" and hour == 12:
+            elif ampm == "AM" and hour == 12:
                 hour = 0
+
             self.hour_var.set(f"{hour:02d}")
         else:
             self.ampm_label.pack(side="left", padx=(8, 0))
@@ -498,9 +696,7 @@ class AutoShutdownWindow:
     def _show_hour_picker(self, event=None):
         """Show hour picker popup"""
         self._show_number_picker(
-            self.hour_var,
-            24 if self.time_format_var.get() == "24小時" else 12,
-            "hour"
+            self.hour_var, 24 if self.time_format_var.get() == "24小時" else 12, "hour"
         )
 
     def _show_minute_picker(self, event=None):
@@ -511,11 +707,13 @@ class AutoShutdownWindow:
         """Show a popup number picker"""
         popup = self._create_picker_popup()
         canvas, scrollbar, inner_frame = self._create_scrollable_container(popup)
-        
+
         start_val, end_val = self._get_picker_range(picker_type, max_val)
         self._create_picker_buttons(inner_frame, var, start_val, end_val, popup)
-        
-        self._setup_picker_scrolling(canvas, scrollbar, inner_frame, var, start_val, end_val)
+
+        self._setup_picker_scrolling(
+            canvas, scrollbar, inner_frame, var, start_val, end_val
+        )
         self._setup_picker_events(popup)
 
     def _create_picker_popup(self):
@@ -540,10 +738,18 @@ class AutoShutdownWindow:
         inner_container = tk.Frame(popup, bg=COLORS["surface_light"])
         inner_container.pack(fill="both", expand=True)
 
-        canvas = tk.Canvas(inner_container, width=80, height=200, bg=COLORS["surface_light"], highlightthickness=0)
+        canvas = tk.Canvas(
+            inner_container,
+            width=80,
+            height=200,
+            bg=COLORS["surface_light"],
+            highlightthickness=0,
+        )
         canvas.pack(side="left", fill="both", expand=True)
 
-        scrollbar = tk.Scrollbar(inner_container, orient="vertical", command=canvas.yview)
+        scrollbar = tk.Scrollbar(
+            inner_container, orient="vertical", command=canvas.yview
+        )
         scrollbar.pack(side="right", fill="y")
 
         canvas.configure(yscrollcommand=scrollbar.set)
@@ -572,19 +778,23 @@ class AutoShutdownWindow:
             btn = tk.Label(
                 inner_frame,
                 text=val,
-                font=FONTS["body"] if not is_current else (FONTS["body"][0], 10, "bold"),
+                font=(
+                    FONTS["body"] if not is_current else (FONTS["body"][0], 10, "bold")
+                ),
                 fg=COLORS["primary"] if is_current else COLORS["text_main"],
                 bg=COLORS["surface_light"],
                 cursor="hand2",
                 width=6,
-                pady=6
+                pady=6,
             )
             btn.pack(fill="x")
             btn.bind("<Button-1>", lambda e, v=val: self._select_number(var, v, popup))
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg=COLORS["bg_light"]))
             btn.bind("<Leave>", lambda e, b=btn: b.config(bg=COLORS["surface_light"]))
 
-    def _setup_picker_scrolling(self, canvas, scrollbar, inner_frame, var, start_val, end_val):
+    def _setup_picker_scrolling(
+        self, canvas, scrollbar, inner_frame, var, start_val, end_val
+    ):
         """Setup scrolling and position to current value"""
         inner_frame.update_idletasks()
         canvas.configure(scrollregion=canvas.bbox("all"))
@@ -594,12 +804,15 @@ class AutoShutdownWindow:
             current_val = var.get()
             current_idx = int(current_val) - start_val
             if current_idx > 0:
-                canvas.yview_moveto(max(0, (current_idx - 3) / max(1, end_val - start_val)))
+                canvas.yview_moveto(
+                    max(0, (current_idx - 3) / max(1, end_val - start_val))
+                )
         except (ValueError, ZeroDivisionError):
             pass
 
     def _setup_picker_events(self, popup):
         """Setup popup close events"""
+
         def close_popup(event=None):
             try:
                 popup.destroy()
@@ -651,7 +864,7 @@ class AutoShutdownWindow:
         try:
             time_str = self._get_time_24h()
             selected_days = self._get_selected_days()
-            
+
             if not selected_days:
                 self._show_validation_error(MESSAGES["validation_error"])
                 return
@@ -740,7 +953,9 @@ class AutoShutdownWindow:
                             for i, var in enumerate(self.weekday_vars):
                                 var.set((i + 1) in days)
                         except Exception:
-                            logger.debug("Unexpected format for saved weekdays, ignoring")
+                            logger.debug(
+                                "Unexpected format for saved weekdays, ignoring"
+                            )
 
                 # Set time
                 time_str = config.get("time")
@@ -771,7 +986,9 @@ class AutoShutdownWindow:
             for i, var in enumerate(self.weekday_vars):
                 var.set(i == today_weekday)
 
-            logger.info(f"Auto-selected today ({WEEKDAY_NAMES[today_weekday]}) and current time {now.hour:02d}:{now.minute:02d}")
+            logger.info(
+                f"Auto-selected today ({WEEKDAY_NAMES[today_weekday]}) and current time {now.hour:02d}:{now.minute:02d}"
+            )
 
     def run(self):
         """Start the application"""

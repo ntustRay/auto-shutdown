@@ -67,7 +67,12 @@ class ShutdownScheduler:
             )
 
             if self.config_path.exists():
-                self.config_path.unlink()
+                try:
+                    self.config_path.unlink()
+                    logger.info("Configuration file removed successfully")
+                except Exception as e:
+                    logger.warning(f"Failed to remove config file: {str(e)}")
+                    # 不要拋出異常，因為主要任務是移除系統排程
 
             logger.info("Successfully removed schedule")
 
@@ -116,9 +121,8 @@ class ShutdownScheduler:
                 text=True,
                 encoding=SUBPROCESS_ENCODING,
             )
-        except Exception:
-            # 忽略刪除錯誤
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to delete existing task, continuing: {str(e)}")
 
         # 使用完整命令參數建立新任務
         cmd = [
@@ -188,7 +192,10 @@ class ShutdownScheduler:
                     # CSV格式，第一個欄位是任務名稱
                     if "," in task:
                         current_task_name = task.split(",")[0].strip('"')
-                        if TASK_NAME in current_task_name:
+                        if (
+                            current_task_name == TASK_NAME
+                            or current_task_name in self.possible_task_names
+                        ):
                             logger.info(f"Found task: {current_task_name}")
                             # 取得詳細資訊
                             detail_result = subprocess.run(
@@ -291,7 +298,10 @@ class ShutdownScheduler:
                 for task in tasks:
                     if "," in task:
                         current_task_name = task.split(",")[0].strip('"')
-                        if TASK_NAME in current_task_name:
+                        if (
+                            current_task_name == TASK_NAME
+                            or current_task_name in self.possible_task_names
+                        ):
                             logger.info(f"Found active schedule: {current_task_name}")
                             return True
             return False
