@@ -580,11 +580,16 @@ class AutoShutdownWindow:
 
         def new_toggle(event=None):
             original_toggle(event)
-            # Update canvas height
+            # Update canvas height and window size
             if self.help_section.is_expanded:
                 self.help_canvas.config(height=HELP_CANVAS_EXPANDED)
+                # Expand window to fit content
+                extra_height = HELP_CANVAS_EXPANDED - HELP_CANVAS_COLLAPSED
+                self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT + extra_height}")
             else:
                 self.help_canvas.config(height=HELP_CANVAS_COLLAPSED)
+                # Restore original window size
+                self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 
         self.help_section._toggle = new_toggle
         self.help_section.header.bind("<Button-1>", new_toggle)
