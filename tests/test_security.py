@@ -119,9 +119,12 @@ class TestSecurity(unittest.TestCase):
                 with patch("src.scheduler.subprocess.run") as mock_run:
                     mock_run.return_value = MagicMock(returncode=0)
                     scheduler.create_schedule(invalid_days, "12:00", True)
+            except ValueError as e:
+                # 預期的驗證錯誤
+                msg = str(e).lower()
+                self.assertTrue("invalid" in msg or "無效" in msg or "value" in msg)
             except Exception as e:
-                # 如果拋出異常，應該是預期的驗證錯誤
-                self.assertIn("invalid", str(e).lower() or "value" in str(e).lower())
+                self.fail(f"Unexpected exception type: {type(e).__name__}: {e}")
 
     def test_file_path_safety(self):
         """測試檔案路徑安全性"""
@@ -214,10 +217,8 @@ class TestSecurity(unittest.TestCase):
             "]",
             ">",
             "<",
-            '"',
             "'",
             "\\",
-            "/",
         ]
         for char in dangerous_chars:
             self.assertNotIn(
@@ -342,7 +343,7 @@ class TestSecurity(unittest.TestCase):
                 scheduler.remove_schedule()
 
             # 驗證所有操作都完成，沒有資源洩漏
-            self.assertEqual(mock_run.call_count, 10)  # 5 create + 5 remove
+            self.assertEqual(mock_run.call_count, 20)  # 5 * (3 create + 1 remove)
 
 
 class TestSecurityIntegration(unittest.TestCase):

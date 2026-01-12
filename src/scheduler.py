@@ -40,6 +40,11 @@ class ShutdownScheduler:
 
     def create_schedule(self, weekdays, time, is_repeat):
         """建立系統關機排程"""
+        # 驗證輸入
+        for day in weekdays:
+            if day not in DAY_MAPPING:
+                raise ValueError(f"無效的星期: {day} (必須是 1-7)")
+
         try:
             self._create_windows_task(weekdays, time)
 

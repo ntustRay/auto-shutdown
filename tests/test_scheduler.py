@@ -76,7 +76,7 @@ class TestShutdownScheduler(unittest.TestCase):
             mock_save.assert_called_once()
 
             # 驗證子程序被調用
-            self.assertEqual(mock_run.call_count, 2)  # 創建 + 驗證
+            self.assertEqual(mock_run.call_count, 3)  # 刪除 + 創建 + 驗證
 
     @patch("src.scheduler.subprocess.run")
     def test_create_schedule_failure(self, mock_run):

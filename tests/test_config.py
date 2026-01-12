@@ -115,7 +115,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(MESSAGES["validation_error"], "請至少選擇一個星期")
         self.assertEqual(
             MESSAGES["permission_error"],
-            "需要管理員權限才能建立排程任務。\\n請以系統管理員身份運行程式。",
+            "需要管理員權限才能建立排程任務。\n請以系統管理員身份運行程式。",
         )
 
     def test_help_tips(self):

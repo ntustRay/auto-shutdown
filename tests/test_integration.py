@@ -8,8 +8,10 @@ import tempfile
 import shutil
 import sys
 import os
+import time
 from pathlib import Path
 from unittest.mock import patch, MagicMock
+import tkinter
 
 # 添加專案根目錄到路徑
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -192,13 +194,17 @@ class TestUIIntegration(unittest.TestCase):
 
     def setUp(self):
         """測試前的設定"""
-        # 由於 UI 測試需要顯示，我們使用 mock 來避免實際創建視窗
-        self.patcher = patch("tkinter.Tk")
-        self.mock_tk = self.patcher.start()
+        # 嘗試初始化 Tk，如果失敗（無顯示器）則 self.root 為 None
+        try:
+            self.root = tkinter.Tk()
+            self.root.withdraw()
+        except tkinter.TclError:
+            self.root = None
 
     def tearDown(self):
         """測試後的清理"""
-        self.patcher.stop()
+        if self.root:
+            self.root.destroy()
 
     def test_ui_imports(self):
         """測試 UI 模組的匯入"""
@@ -213,6 +219,9 @@ class TestUIIntegration(unittest.TestCase):
 
     def test_ui_component_creation(self):
         """測試 UI 元件的創建"""
+        if self.root is None:
+            self.skipTest("No display available")
+            
         try:
             from src.ui.modern_widgets import ModernToggle, ModernButton
 
@@ -231,6 +240,9 @@ class TestUIIntegration(unittest.TestCase):
 
     def test_theme_application(self):
         """測試主題應用"""
+        if self.root is None:
+            self.skipTest("No display available")
+
         try:
             from src.ui.modern_theme import COLORS, FONTS, configure_styles
 
@@ -241,7 +253,8 @@ class TestUIIntegration(unittest.TestCase):
             # 測試樣式配置
             style = configure_styles()
             # style 可能是 None 或樣式物件
-            self.assertIsNone(style) or hasattr(style, "configure")
+            if style is not None:
+                self.assertTrue(hasattr(style, "configure"))
 
         except Exception as e:
             self.fail(f"Theme application failed: {e}")
