@@ -938,8 +938,13 @@ class AutoShutdownWindow:
         has_active = self.scheduler.has_active_schedule()
         config = self.scheduler.load_config()
 
-        # 如果有執行中的排程且有配置，則加載配置
-        if has_active and config:
+        # 如果有執行中的排程，無論是否有設定檔，都顯示為已啟用
+        if has_active:
+            self._update_status("active", "已設定排程")
+
+        # 嘗試載入設定
+        config_loaded = False
+        if config:
             try:
                 # Set weekday checkboxes
                 saved_weekdays = config.get("weekdays", [])
@@ -966,14 +971,14 @@ class AutoShutdownWindow:
 
                 # Set execution mode
                 self.repeat_var.set(config.get("is_repeat", True))
-
-                # Only mark as active if we successfully loaded a valid config
-                if saved_weekdays and time_str:
-                    self._update_status("active", "已設定排程")
+                
+                config_loaded = True
 
             except Exception:
                 logger.exception("Failed to load configuration")
-        else:
+
+        # 如果沒有載入設定（可能是首次執行或設定檔遺失），使用預設值
+        if not config_loaded:
             # 沒有執行中的排程，自動選擇當天星期和當前時間
             now = datetime.now()
 

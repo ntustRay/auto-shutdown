@@ -190,10 +190,16 @@ class ShutdownScheduler:
                 tasks = list_result.stdout.splitlines()
                 for task in tasks:
                     # CSV格式，第一個欄位是任務名稱
+                    # CSV格式，第一個欄位是任務名稱
                     if "," in task:
                         current_task_name = task.split(",")[0].strip('"')
+                        # 移除可能的路徑前綴（例如 \AutomaticShutdownScheduler）
+                        normalized_name = current_task_name.lstrip('\\')
+                        
                         if (
-                            current_task_name == TASK_NAME
+                            normalized_name == TASK_NAME
+                            or normalized_name in self.possible_task_names
+                            or current_task_name == TASK_NAME
                             or current_task_name in self.possible_task_names
                         ):
                             logger.info(f"Found task: {current_task_name}")
@@ -285,7 +291,11 @@ class ShutdownScheduler:
     def has_active_schedule(self):
         """檢查是否有執行中的排程"""
         try:
-            # 列出所有任務
+            # 同時檢查Windows任務排程器和配置檔案
+            has_task = False
+            has_config = self.config_path.exists()
+
+            # 檢查Windows任務排程器
             list_result = subprocess.run(
                 ["schtasks", SCHTASKS_QUERY, "/fo", "csv", "/nh"],
                 capture_output=True,
@@ -296,15 +306,28 @@ class ShutdownScheduler:
             if list_result.returncode == 0:
                 tasks = list_result.stdout.splitlines()
                 for task in tasks:
+                    # CSV格式，第一個欄位是任務名稱
                     if "," in task:
                         current_task_name = task.split(",")[0].strip('"')
+                        # 移除可能的路徑前綴（例如 \AutomaticShutdownScheduler）
+                        normalized_name = current_task_name.lstrip('\\')
+                        
                         if (
-                            current_task_name == TASK_NAME
+                            normalized_name == TASK_NAME
+                            or normalized_name in self.possible_task_names
+                            or current_task_name == TASK_NAME
                             or current_task_name in self.possible_task_names
                         ):
                             logger.info(f"Found active schedule: {current_task_name}")
-                            return True
-            return False
+                            has_task = True
+                            break
+
+            # 只要Windows任務排程器中存在任務，就認為有活躍排程
+            # 配置檔案遺失不應影響排程狀態的判定
+            logger.info(
+                f"has_active_schedule check - task: {has_task}, config: {has_config}"
+            )
+            return has_task
         except Exception as e:
             logger.error(f"Error checking active schedule: {str(e)}")
             return False
