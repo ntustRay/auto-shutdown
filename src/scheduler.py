@@ -195,18 +195,35 @@ class ShutdownScheduler:
                 tasks = list_result.stdout.splitlines()
                 for task in tasks:
                     # CSV格式，第一個欄位是任務名稱
-                    # CSV格式，第一個欄位是任務名稱
                     if "," in task:
                         current_task_name = task.split(",")[0].strip('"')
-                        # 移除可能的路徑前綴（例如 \AutomaticShutdownScheduler）
-                        normalized_name = current_task_name.lstrip('\\')
-                        
-                        if (
+                        # 移除可能的路徑前綴（例如 \AutomaticShutdownScheduler 或 TaskFolder\AutomaticShutdownScheduler）
+                        # 使用 partition 來處理各種路徑格式
+                        normalized_name = (
+                            current_task_name.split("\\")[-1]
+                            if "\\" in current_task_name
+                            else current_task_name
+                        )
+
+                        # 檢查是否匹配（包含完整名稱和簡短版本）
+                        is_match = (
                             normalized_name == TASK_NAME
                             or normalized_name in self.possible_task_names
                             or current_task_name == TASK_NAME
                             or current_task_name in self.possible_task_names
-                        ):
+                        )
+
+                        # 額外檢查：如果任務名稱包含我們的任務名稱作為後綴
+                        if not is_match and TASK_NAME in current_task_name:
+                            # 檢查最後一部分是否匹配
+                            last_part = current_task_name.split("\\")[-1]
+                            if (
+                                last_part == TASK_NAME
+                                or last_part in self.possible_task_names
+                            ):
+                                is_match = True
+
+                        if is_match:
                             logger.info(f"Found task: {current_task_name}")
                             # 取得詳細資訊
                             detail_result = subprocess.run(
@@ -314,15 +331,32 @@ class ShutdownScheduler:
                     # CSV格式，第一個欄位是任務名稱
                     if "," in task:
                         current_task_name = task.split(",")[0].strip('"')
-                        # 移除可能的路徑前綴（例如 \AutomaticShutdownScheduler）
-                        normalized_name = current_task_name.lstrip('\\')
-                        
-                        if (
+                        # 移除可能的路徑前綴（例如 \AutomaticShutdownScheduler 或 TaskFolder\AutomaticShutdownScheduler）
+                        normalized_name = (
+                            current_task_name.split("\\")[-1]
+                            if "\\" in current_task_name
+                            else current_task_name
+                        )
+
+                        # 檢查是否匹配（包含完整名稱和簡短版本）
+                        is_match = (
                             normalized_name == TASK_NAME
                             or normalized_name in self.possible_task_names
                             or current_task_name == TASK_NAME
                             or current_task_name in self.possible_task_names
-                        ):
+                        )
+
+                        # 額外檢查：如果任務名稱包含我們的任務名稱作為後綴
+                        if not is_match and TASK_NAME in current_task_name:
+                            # 檢查最後一部分是否匹配
+                            last_part = current_task_name.split("\\")[-1]
+                            if (
+                                last_part == TASK_NAME
+                                or last_part in self.possible_task_names
+                            ):
+                                is_match = True
+
+                        if is_match:
                             logger.info(f"Found active schedule: {current_task_name}")
                             has_task = True
                             break
