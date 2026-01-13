@@ -15,6 +15,7 @@ from .config import (
     SHUTDOWN_COMMAND,
     CONFIG_ENCODING,
     SUBPROCESS_ENCODING,
+    SHUTDOWN_WARNING_TIME,
 )
 
 logger = logging.getLogger(__name__)
@@ -65,6 +66,23 @@ class ShutdownScheduler:
     def remove_schedule(self):
         """移除現有關機排程"""
         try:
+            # 先嘗試中止正在執行中的關機命令
+            try:
+                abort_result = subprocess.run(
+                    ["shutdown", "/a"],
+                    capture_output=True,
+                    text=True,
+                    encoding=SUBPROCESS_ENCODING,
+                )
+                if abort_result.returncode == 0:
+                    logger.info("Successfully aborted active shutdown countdown")
+                else:
+                    # 沒有正在執行的關機命令，這是正常的
+                    logger.debug("No active shutdown to abort")
+            except Exception as e:
+                logger.debug(f"Failed to abort shutdown (may not be running): {str(e)}")
+            
+            # 刪除排程任務
             subprocess.run(
                 ["schtasks", "/delete", "/tn", self.task_name, "/f"],
                 capture_output=True,
@@ -118,6 +136,49 @@ class ShutdownScheduler:
         hour, minute = map(int, time.split(":"))
         weekdays_str = " ".join(DAY_MAPPING[day] for day in weekdays)
 
+        # 計算實際執行時間（提前15分鐘，因為 shutdown /t 900 會等15分鐘後關機）
+        from datetime import datetime as dt, timedelta
+        now = dt.now()
+        target_time = dt(2000, 1, 1, hour, minute)
+        actual_time = target_time - timedelta(seconds=SHUTDOWN_WARNING_TIME)
+        actual_hour = actual_time.hour
+        actual_minute = actual_time.minute
+        
+        # 檢查排程時間是否已經過去（使用者設定在 15 分鐘內關機）
+        today_target_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        if today_target_time < now:
+            # 目標時間已經過去，嘗試明天
+            today_target_time += timedelta(days=1)
+        
+        time_until_shutdown = (today_target_time - now).total_seconds()
+        
+        # 如果關機時間在 15 分鐘內，立即執行
+        if time_until_shutdown <= SHUTDOWN_WARNING_TIME:
+            logger.info(f"Shutdown time is within {SHUTDOWN_WARNING_TIME}s, executing immediately")
+            # 計算實際剩餘秒數
+            remaining_seconds = max(int(time_until_shutdown), 1)
+            immediate_command = f'shutdown /s /t {remaining_seconds} /c "系統將在{remaining_seconds//60}分鐘後關機"'
+            
+            try:
+                result = subprocess.run(
+                    immediate_command,
+                    shell=True,
+                    capture_output=True,
+                    text=True,
+                    encoding=SUBPROCESS_ENCODING,
+                )
+                if result.returncode == 0:
+                    logger.info(f"Immediate shutdown scheduled for {remaining_seconds}s from now")
+                    # 仍然建立定期排程以供未來使用
+                    # 繼續執行下面的排程建立邏輯
+                else:
+                    raise RuntimeError(f"Failed to execute immediate shutdown: {result.stderr}")
+            except Exception as e:
+                logger.error(f"Failed to execute immediate shutdown: {str(e)}")
+                raise
+        
+        logger.info(f"User wants shutdown at {hour:02d}:{minute:02d}, scheduling task at {actual_hour:02d}:{actual_minute:02d}")
+
         # 刪除任何現有的舊任務
         try:
             subprocess.run(
@@ -142,7 +203,7 @@ class ShutdownScheduler:
             "/d",
             weekdays_str,
             "/st",
-            f"{hour:02d}:{minute:02d}",
+            f"{actual_hour:02d}:{actual_minute:02d}",
             "/ru",
             "SYSTEM",
             "/f",

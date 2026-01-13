@@ -30,7 +30,7 @@ CORNER_RADIUS = 16
 
 # 動畫時間設定
 COLON_BLINK_INTERVAL = 500  # milliseconds
-SHUTDOWN_WARNING_TIME = 60  # seconds
+SHUTDOWN_WARNING_TIME = 900  # seconds (15 minutes)
 
 # 檔案路徑
 CONFIG_FILE_NAME = ".auto_shutdown_config.json"
@@ -72,12 +72,12 @@ MESSAGES = {
 # 說明提示
 HELP_TIPS = [
     "• 選擇要執行的星期 (可複選)",
-    "• 系統會在關機前1分鐘顯示提醒",
+    "• 系統會在關機前15分鐘顯示提醒",
     "• 設定會自動保存，重開機後依然有效",
 ]
 
 # 子程式命令
-SHUTDOWN_COMMAND = 'shutdown /s /t 60 /c "系統將在1分鐘後關機"'
+SHUTDOWN_COMMAND = 'shutdown /s /t 900 /c "系統將在15分鐘後關機"'
 
 # 編碼設定
 import locale

@@ -92,13 +92,14 @@ class TestShutdownScheduler(unittest.TestCase):
     @patch("src.scheduler.subprocess.run")
     def test_remove_schedule_success(self, mock_run):
         """測試成功移除排程"""
+        # 現在會調用兩次：shutdown /a 和 schtasks /delete
         mock_run.return_value = MagicMock(returncode=0)
 
         with patch.object(self.scheduler, "_save_config") as mock_save:
             self.scheduler.remove_schedule()
 
-            # 驗證子程序被調用
-            mock_run.assert_called_once()
+            # 驗證子程序被調用了兩次（shutdown /a + schtasks）
+            self.assertEqual(mock_run.call_count, 2)
 
             # 驗證配置檔案被刪除
             self.assertFalse(self.scheduler.config_path.exists())
@@ -113,8 +114,28 @@ class TestShutdownScheduler(unittest.TestCase):
             # 應該不拋出異常，只記錄警告
             self.scheduler.remove_schedule()
 
-            # 驗證子程序仍然被調用
-            mock_run.assert_called_once()
+            # 驗證子程序仍然被調用了兩次
+            self.assertEqual(mock_run.call_count, 2)
+
+    @patch("src.scheduler.subprocess.run")
+    def test_remove_schedule_aborts_shutdown(self, mock_run):
+        """測試移除排程時會中止正在執行的關機命令"""
+        # 模擬 shutdown /a 成功，然後 schtasks 刪除成功
+        mock_run.side_effect = [
+            MagicMock(returncode=0),  # shutdown /a 成功
+            MagicMock(returncode=0),  # schtasks /delete 成功
+        ]
+        
+        self.scheduler.remove_schedule()
+        
+        # 驗證 shutdown /a 被調用
+        first_call = mock_run.call_args_list[0]
+        self.assertEqual(first_call[0][0], ["shutdown", "/a"])
+        
+        # 驗證 schtasks 刪除也被調用
+        second_call = mock_run.call_args_list[1]
+        self.assertIn("schtasks", second_call[0][0])
+        self.assertIn("/delete", second_call[0][0])
 
     @patch("src.scheduler.subprocess.run")
     def test_get_schedule_info_success(self, mock_run):
@@ -198,6 +219,53 @@ class TestShutdownScheduler(unittest.TestCase):
             mock_run.return_value = MagicMock(returncode=0)
             # 應該能處理各種有效的星期格式
             self.scheduler.create_schedule([1, 7], "12:00", True)  # 周一到周日
+
+    @patch("src.scheduler.subprocess.run")
+    def test_time_offset_for_warning(self, mock_run):
+        """測試關機時間提前15分鐘的計算邏輯"""
+        mock_run.return_value = MagicMock(returncode=0)
+        
+        # 測試案例：使用者設定 23:00 關機
+        # 實際排程應該在 22:45 執行
+        self.scheduler.create_schedule([1, 2, 3], "23:00", True)
+        
+        # 取得最後一次 create 命令的呼叫（第二次呼叫，第一次是 delete）
+        create_call = None
+        for call in mock_run.call_args_list:
+            args = call[0][0]
+            if "/create" in args:
+                create_call = args
+                break
+        
+        self.assertIsNotNone(create_call, "Should have called schtasks /create")
+        
+        # 驗證 /st 參數是 22:45 而不是 23:00
+        st_index = create_call.index("/st")
+        actual_time = create_call[st_index + 1]
+        self.assertEqual(actual_time, "22:45", 
+                        f"Expected task to run at 22:45 (15 min before 23:00), got {actual_time}")
+    
+    @patch("src.scheduler.subprocess.run")
+    def test_time_offset_cross_midnight(self, mock_run):
+        """測試跨越午夜的時間偏移計算"""
+        mock_run.return_value = MagicMock(returncode=0)
+        
+        # 測試案例：使用者設定 00:10 關機
+        # 實際排程應該在前一天的 23:55 執行
+        self.scheduler.create_schedule([1], "00:10", True)
+        
+        # 取得 create 命令
+        create_call = None
+        for call in mock_run.call_args_list:
+            args = call[0][0]
+            if "/create" in args:
+                create_call = args
+                break
+        
+        st_index = create_call.index("/st")
+        actual_time = create_call[st_index + 1]
+        self.assertEqual(actual_time, "23:55",
+                        f"Expected task to run at 23:55 (15 min before 00:10), got {actual_time}")
 
 
 class TestSchedulerIntegration(unittest.TestCase):

@@ -878,6 +878,8 @@ class AutoShutdownWindow:
             self.scheduler.create_schedule(selected_days, time_str, is_repeat)
 
             self._update_status("active", MESSAGES["active_status"])
+            # Ensure UI updates are processed before showing messagebox
+            self.root.update_idletasks()
             self._show_success_message(MESSAGES["success_scheduled"])
 
         except ValueError as e:
@@ -937,6 +939,36 @@ class AutoShutdownWindow:
         """Update status indicator"""
         self.status_indicator.set_status(status, text)
 
+    def _parse_schedule_time_from_info(self, task_info):
+        """Parse time and weekdays from task scheduler info string"""
+        import re
+        result = {"time": None, "weekdays": None}
+        
+        if not task_info or "找不到" in task_info:
+            return result
+            
+        try:
+            # Parse next run time - formats like "2026/1/14 23:30:00" or "2026-01-14 23:30:00"
+            next_run_patterns = [
+                r"下次執行時間[：:]\s*([\d/\-]+)\s+(\d{1,2}[：:]\d{2})",
+                r"Next Run Time[：:]\s*([\d/\-]+)\s+(\d{1,2}[：:]\d{2})",
+            ]
+            
+            for pattern in next_run_patterns:
+                match = re.search(pattern, task_info)
+                if match:
+                    time_str = match.group(2).replace("：", ":")
+                    parts = time_str.split(":")
+                    if len(parts) >= 2:
+                        result["time"] = f"{int(parts[0]):02d}:{int(parts[1]):02d}"
+                        break
+            
+            logger.info(f"Parsed schedule info: {result}")
+        except Exception as e:
+            logger.warning(f"Failed to parse schedule info: {e}")
+            
+        return result
+
     def _load_saved_config(self):
         """Load saved configuration"""
         # 檢查是否有執行中的排程
@@ -982,9 +1014,23 @@ class AutoShutdownWindow:
             except Exception:
                 logger.exception("Failed to load configuration")
 
-        # 如果沒有載入設定（可能是首次執行或設定檔遺失），使用預設值
+        # 如果沒有載入設定但有活躍排程，嘗試從 Windows 任務排程器解析時間
+        if not config_loaded and has_active:
+            try:
+                task_info = self.scheduler.get_schedule_info()
+                parsed = self._parse_schedule_time_from_info(task_info)
+                
+                if parsed["time"]:
+                    hour, minute = map(int, parsed["time"].split(":"))
+                    self.hour_var.set(f"{hour:02d}")
+                    self.minute_var.set(f"{minute:02d}")
+                    config_loaded = True
+                    logger.info(f"Loaded time from scheduler: {parsed['time']}")
+            except Exception as e:
+                logger.warning(f"Failed to parse schedule from task info: {e}")
+
+        # 如果仍然沒有載入設定（首次執行），使用預設值
         if not config_loaded:
-            # 沒有執行中的排程，自動選擇當天星期和當前時間
             now = datetime.now()
 
             # 設定當前時間
